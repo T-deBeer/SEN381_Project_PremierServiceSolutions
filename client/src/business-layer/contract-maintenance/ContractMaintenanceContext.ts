@@ -1,7 +1,7 @@
 import Contract from "../../data-layer/data-classes/Contract";
 import HandleContractStrategy from "./HandleContractStrategy";
 
-class MaintenanceContext {
+class ContractMaintenanceContext {
     ContractStrategy: HandleContractStrategy;
 
     constructor(strategy: HandleContractStrategy){
@@ -13,4 +13,4 @@ class MaintenanceContext {
     }
 }
 
-export default MaintenanceContext;
+export default ContractMaintenanceContext;

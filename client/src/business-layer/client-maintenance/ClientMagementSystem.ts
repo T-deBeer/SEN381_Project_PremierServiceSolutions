@@ -19,20 +19,27 @@ class ClientManagementSystem
         this.serviceAgreementStrategy = strategy;
         //this.Clients = [];
     }
-}
 
-function AddClient() {
+    AddClient() {
     
-}
-
-function RemoveClient() {
+    }
     
-}
-
-function UpdateSLA() {
+    RemoveClient() {
+        
+    }
     
+    UpdateSLA() {
+        
+    }
+    
+    AddContactHistory(){
+    
+    }
+
+    Handle(agreement:ServiceAgreement){ 
+        this.serviceAgreementStrategy.HandleAgreement(agreement)
+    }
 }
 
-function AddContactHistory(){
 
-}
+export default ClientManagementSystem

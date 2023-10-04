@@ -1,9 +1,6 @@
 class NoteRecord {
-
-}
-
-function recordNotes() {
+    recordNotes() {
+    }
 }
 
 export default NoteRecord;
-
