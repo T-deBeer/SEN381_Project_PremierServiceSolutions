@@ -1,28 +1,13 @@
 {
-  "name": "sen381_project_premierservicesolutions",
+  "name": "sen381-project",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Premier Service Solutions",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+      "start-backend": "cd client && npm run dev",
+      "start-frontend": "cd server && npm run dev",
+      "start": "concurrently \"npm run start-backend\" \"npm run start-frontend\""
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/T-deBeer/SEN381_Project_PremierServiceSolutions.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/T-deBeer/SEN381_Project_PremierServiceSolutions/issues"
-  },
-  "homepage": "https://github.com/T-deBeer/SEN381_Project_PremierServiceSolutions#readme",
   "dependencies": {
-    "bcrypt": "^5.1.1",
-    "body-parser": "^1.20.2",
-    "mysql2": "^3.6.1",
-    "sequelize": "^6.33.0",
-    "socket.io": "^4.7.2",
-    "uuid": "^9.0.1"
+    "concurrently": "^8.2.1"
   }
 }
