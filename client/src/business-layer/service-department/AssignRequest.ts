@@ -1,4 +1,4 @@
-import MaintenanceJob from "../../data-layer/data-classes/MaitainanceJob";
+import MaintenanceJob from "../../data-layer/data-classes/MaintenanceJob";
 import ServiceRequest from "../../data-layer/data-classes/ServiceRequest";
 import Staff from "../../data-layer/data-classes/Staff";
 
