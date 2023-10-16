@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import LandingPage from "./presentation-layer/LandingPage";
 import ErrorPage from "./presentation-layer/ErrorPage";
 import LoginPage from "./presentation-layer/LoginPage";
+import ServiceDeptPage from "./presentation-layer/ServiceDeptPage";
 import { UserProvider } from "./data-layer/context-classes/UserContext";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
@@ -14,6 +15,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<LoginPage />} />
+          <Route path="/serviceDept" element={<ServiceDeptPage />} />
           <Route path="*" element={<ErrorPage />} />
         </Routes>
       </Router>
