@@ -7,7 +7,7 @@ import WelcomeDiv from "../components/WelcomeDiv";
 export default function LoginPage() {
   const { user, login, signout } = useUser();
   function handleLogin() {
-    login({ username: "Tiaan", role: "employee" });
+    alert("Handle Sign up");
   }
 
   return (
@@ -20,13 +20,25 @@ export default function LoginPage() {
           action="/login"
           method="post"
         >
-          <h2 className="text-center">Log In</h2>
+          <h2 className="text-center">Sign Up</h2>
           <div className="form-floating mb-4 mt-5">
             <input
               type="text"
               className="form-control"
-              id="name"
-              name="name"
+              id="fullname"
+              name="fullname"
+              placeholder="Fullname"
+            />
+            <label htmlFor="floatingName">
+              Fullname<sup className="text-danger">*</sup>
+            </label>
+          </div>
+          <div className="form-floating mb-4">
+            <input
+              type="text"
+              className="form-control"
+              id="username"
+              name="username"
               placeholder="Username"
             />
             <label htmlFor="floatingName">
@@ -59,8 +71,21 @@ export default function LoginPage() {
               Password<sup className="text-danger">*</sup>
             </label>
           </div>
+          <div className="form-floating mb-4">
+            <input
+              type="password"
+              className="form-control"
+              id="confirmPassword"
+              name="confirmPassword"
+              required
+              placeholder="Confirm Password"
+            />
+            <label htmlFor="password">
+              Confirm Password<sup className="text-danger">*</sup>
+            </label>
+          </div>
           <div className="form-floating mb-2">
-            <a href="/signup">Don't have an account? Create one</a>
+            <a href="/login">Already have an account? Log in now</a>
           </div>
           <div className="d-flex flex-row justify-content-between">
             <button
@@ -75,7 +100,7 @@ export default function LoginPage() {
               className="btn btn-outline-dark btn-lg"
               onClick={handleLogin}
             >
-              Log In
+              Sign Up
             </button>
           </div>
         </form>
