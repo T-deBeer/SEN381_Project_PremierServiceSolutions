@@ -1,16 +1,20 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 
-// Define a user type
 interface User {
   username: string;
-  email: string;
-  // Add any other user-related properties
+  role: string;
 }
 
 interface UserContextType {
   user: User | null;
-  signIn: (userData: User) => void;
-  signOut: () => void;
+  login: (user: User) => void;
+  signout: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -30,16 +34,31 @@ interface UserProviderProps {
 export function UserProvider({ children }: UserProviderProps) {
   const [user, setUser] = useState<User | null>(null);
 
-  const signIn = (userData: User) => {
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const login = (userData: User) => {
     setUser(userData);
   };
 
-  const signOut = () => {
+  const signout = () => {
     setUser(null);
   };
 
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
+    } else {
+      localStorage.removeItem("user");
+    }
+  }, [user]);
+
   return (
-    <UserContext.Provider value={{ user, signIn, signOut }}>
+    <UserContext.Provider value={{ user, login, signout }}>
       {children}
     </UserContext.Provider>
   );
