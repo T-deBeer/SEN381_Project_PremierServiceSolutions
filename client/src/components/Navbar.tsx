@@ -1,12 +1,8 @@
+import { useContext } from "react";
 import { useUser } from "../data-layer/context-classes/UserContext";
 
 export default function Navbar() {
-  const { user, signIn, signOut } = useUser();
-
-  const handleSignOut = () => {
-    signOut();
-  };
-  
+  const { user, signout } = useUser();
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark p-2">
       <a className="navbar-brand" href="/">
@@ -33,7 +29,7 @@ export default function Navbar() {
             <button
               className="btn btn-sm btn-secondary"
               type="button"
-              onClick={handleSignOut}
+              onClick={signout}
             >
               Sign Out
             </button>

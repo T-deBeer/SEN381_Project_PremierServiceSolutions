@@ -1,8 +1,13 @@
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import WelcomeDiv from "../components/WelcomeDiv";
+import { useUser } from "../data-layer/context-classes/UserContext";
 
 export default function LandingPage() {
+  const { user, login, signout } = useUser();
+  if (user) {
+    alert("reroute");
+  }
   return (
     <div className="vh-100">
       <Navbar />
@@ -32,17 +37,6 @@ export default function LandingPage() {
           <a className="btn btn-dark w-50" type="button" href="/login">
             GET STARTED
           </a>
-        </div>
-      </div>
-      <div>
-        <div className="justify-content-center align-items-center d-flex flex-row gap-3 mb-2">
-          <p className="text-center text-black fs-6 fw-normal">
-            Terms of Service
-          </p>
-          <p className="text-center text-black fs-6 fw-normal">
-            Privacy Policy
-          </p>
-          <p className="text-center text-black fs-6 fw-normal ">Contact Us</p>
         </div>
       </div>
       <Footer />
