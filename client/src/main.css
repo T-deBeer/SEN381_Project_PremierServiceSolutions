@@ -5,3 +5,9 @@
   background-position: center;
   height: 15%;
 }
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  color: black !important;
+  background-color: black;
+}

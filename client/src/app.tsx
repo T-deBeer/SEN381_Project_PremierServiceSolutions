@@ -4,6 +4,7 @@ import ErrorPage from "./presentation-layer/ErrorPage";
 import LoginPage from "./presentation-layer/LoginPage";
 import ServiceDeptPage from "./presentation-layer/ServiceDeptPage";
 import SignUpPage from "./presentation-layer/SignUpPage";
+import ClientPage from "./presentation-layer/ClientPage";
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/serviceDept" element={<ServiceDeptPage />} />
+        <Route path="/client" element={<ClientPage />} />
         <Route path="*" element={<ErrorPage />} />
       </Routes>
     </Router>

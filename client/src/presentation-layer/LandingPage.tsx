@@ -39,17 +39,6 @@ export default function LandingPage() {
           </a>
         </div>
       </div>
-      <div>
-        <div className="justify-content-center align-items-center d-flex flex-row gap-3 mb-2">
-          <p className="text-center text-black fs-6 fw-normal">
-            Terms of Service
-          </p>
-          <p className="text-center text-black fs-6 fw-normal">
-            Privacy Policy
-          </p>
-          <p className="text-center text-black fs-6 fw-normal ">Contact Us</p>
-        </div>
-      </div>
       <Footer />
     </div>
   );
