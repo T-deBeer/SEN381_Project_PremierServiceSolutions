@@ -47,6 +47,7 @@ export function UserProvider({ children }: UserProviderProps) {
 
   const signout = () => {
     setUser(null);
+    window.location.replace("/");
   };
 
   useEffect(() => {

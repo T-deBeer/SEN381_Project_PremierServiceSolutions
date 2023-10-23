@@ -6,8 +6,10 @@ import WelcomeDiv from "../components/WelcomeDiv";
 
 export default function LoginPage() {
   const { user, login, signout } = useUser();
+
   function handleLogin() {
     login({ username: "Tiaan", role: "employee" });
+    window.location.replace("/maintenance");
   }
 
   return (
