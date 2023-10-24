@@ -6,6 +6,7 @@ class ServiceClient {
     ClientID: string;
     ClientName: string;
     ClientSurname: string;
+    ClientEmail: string;
     Password: string;
     ClientType: string;
     ClientServiceAgreements: ServiceAgreement[];
@@ -14,12 +15,14 @@ class ServiceClient {
     constructor(
       name: string,
       surname: string,
+      email: string,
       password: string,
       clientType: string
     ) {
       this.ClientID = uuidv4();
       this.ClientName = name;
       this.ClientSurname = surname;
+      this.ClientEmail = email;
       this.Password = password;
       this.ClientType = clientType;
       this.ClientServiceAgreements = [];

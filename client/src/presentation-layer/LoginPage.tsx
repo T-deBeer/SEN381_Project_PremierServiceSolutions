@@ -1,40 +1,58 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { useUser } from "../data-layer/context-classes/UserContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import WelcomeDiv from "../components/WelcomeDiv";
+import axios from "axios";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 
 export default function LoginPage() {
   const { user, login, signout } = useUser();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  function handleLogin() {
-    login({ username: "Tiaan", role: "employee" });
-    window.location.replace("/maintenance");
-  }
+  const handleLogin = async (e: any) => {
+    e.preventDefault();
+
+    setIsLoading(true);
+
+    try {
+      const response = await axios.post("/api/get/login", {
+        email,
+        password,
+      });
+
+      if (response.status === 200) {
+        console.log("Login successful");
+        let user = response.data;
+        login({ username: user.username, role: user.role });
+      } else {
+        console.log("Login failed");
+      }
+    } catch (error) {
+      console.error("Error while logging in:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div>
       <Navbar />
       <WelcomeDiv text={"Premier Service Solutions"} />
-      <div className="d-flex flex-row justify-content-center align-items-center mt-5">
+      <div className="d-flex flex-column justify-content-center align-items-center mt-5">
+        {isLoading ? (
+          <FontAwesomeIcon icon={faSpinner} spin size="3x" />
+        ) : (
+          <></>
+        )}
         <form
           className="bg-dark-subtle m-2 rounded-3 p-5 w-50"
-          action="/login"
-          method="post"
+          onSubmit={handleLogin} // Use onSubmit to trigger the login function
         >
-          <h2 className="text-center">Log In</h2>
-          <div className="form-floating mb-4 mt-5">
-            <input
-              type="text"
-              className="form-control"
-              id="name"
-              name="name"
-              placeholder="Username"
-            />
-            <label htmlFor="floatingName">
-              Username<sup className="text-danger">*</sup>
-            </label>
-          </div>
+          <h2 className="text-center mb-5">Log In</h2>
           <div className="form-floating mb-4">
             <input
               type="email"
@@ -43,6 +61,8 @@ export default function LoginPage() {
               name="email"
               required
               placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
             <label htmlFor="email">
               Email<sup className="text-danger">*</sup>
@@ -56,6 +76,8 @@ export default function LoginPage() {
               name="password"
               required
               placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
             <label htmlFor="password">
               Password<sup className="text-danger">*</sup>
@@ -72,11 +94,7 @@ export default function LoginPage() {
             >
               Cancel
             </button>
-            <button
-              type="button"
-              className="btn btn-outline-dark btn-lg"
-              onClick={handleLogin}
-            >
+            <button type="submit" className="btn btn-outline-dark btn-lg">
               Log In
             </button>
           </div>
