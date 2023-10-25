@@ -9,13 +9,15 @@ class ServiceRequest {
   Priority: number;
   RequestTime: Date;
   FulfillmentDate: Date;
+  Active;
 
-  constructor(client: ServiceClient, priority: number, staff: Staff|null, serviceRequestTime: Date, serviceFulfillmentTime: Date) {
+  constructor(client: ServiceClient, priority: number, staff: Staff|null, serviceRequestTime: Date, serviceFulfillmentTime: Date, active: number) {
     this.RequestClient = client;
     this.Staff = staff;
     this.Priority = priority;
     this.RequestTime = serviceRequestTime;
     this.FulfillmentDate = serviceFulfillmentTime;
+    this.Active = active
   }
 }
 

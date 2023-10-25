@@ -32,49 +32,54 @@ export default function ServiceDeptPage() {
           const priority = item.Priority;
           const requestDate = new Date(item.RequestDate);
           const fulfillmentDate = new Date(item.FulfillmentDate);
+          const active = item.Active;
 
-          if (employeeData) {
-            //Employee is assigned
-            let request = new ServiceRequest(
-              new ServiceClient(
-                clientData.FirstName,
-                clientData.LastName,
-                clientData.ClientAuthentication.Email,
-                clientData.ClientAuthentication.Password,
-                clientData.ClientType.Type
-              ),
-              priority,
-              new Staff(
-                employeeData.FirstName,
-                employeeData.LastName,
-                employeeData.Email,
-                employeeData.Password,
-                employeeData.JobTitle
-              ),
-              requestDate,
-              fulfillmentDate
-            );
-
-            request.RequestID = item.ID;
-            return request;
-          } else {
-            //No employee assigned
-            let request = new ServiceRequest(
-              new ServiceClient(
-                clientData.FirstName,
-                clientData.LastName,
-                clientData.ClientAuthentication.Email,
-                clientData.ClientAuthentication.Password,
-                clientData.ClientType.Type
-              ),
-              priority,
-              null,
-              requestDate,
-              fulfillmentDate
-            );
-
-            request.RequestID = item.ID;
-            return request;
+          if (active == 1) {
+            if (employeeData) {
+              //Employee is assigned
+              let request = new ServiceRequest(
+                new ServiceClient(
+                  clientData.FirstName,
+                  clientData.LastName,
+                  clientData.ClientAuthentication.Email,
+                  clientData.ClientAuthentication.Password,
+                  clientData.ClientType.Type          
+                ),
+                priority,
+                new Staff(
+                  employeeData.FirstName,
+                  employeeData.LastName,
+                  employeeData.Email,
+                  employeeData.Password,
+                  employeeData.JobTitle
+                ),
+                requestDate,
+                fulfillmentDate,
+                active
+              );
+  
+              request.RequestID = item.ID;
+              return request;
+            } else {
+              //No employee assigned
+              let request = new ServiceRequest(
+                new ServiceClient(
+                  clientData.FirstName,
+                  clientData.LastName,
+                  clientData.ClientAuthentication.Email,
+                  clientData.ClientAuthentication.Password,
+                  clientData.ClientType.Type
+                ),
+                priority,
+                null,
+                requestDate,
+                fulfillmentDate,
+                active
+              );
+  
+              request.RequestID = item.ID;
+              return request;
+            }
           }
         });
 
