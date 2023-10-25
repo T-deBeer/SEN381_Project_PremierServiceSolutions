@@ -114,6 +114,7 @@ router.post("/login", async (req, res) => {
           message: "Login successful",
           username: clientAuth.FirstName + " " + clientAuth.LastName,
           role: "Client",
+          id: clientAuth.GUID,
         });
       } else {
         res.status(401).json({ error: "Incorrect email or password" });
@@ -128,6 +129,7 @@ router.post("/login", async (req, res) => {
           message: "Login successful",
           username: employee.FirstName + " " + employee.LastName,
           role: employee.JobTitle,
+          id: employee.GUID,
         });
       } else {
         res.status(401).json({ error: "Incorrect email or password" });
@@ -161,11 +163,32 @@ router.get("/requests", async (req, res) => {
   }
 });
 
+router.get("/requests/", async (req, res) => {
+  try {
+    const { id } = req.query;
+
+    const request = await ServiceRequest.findAll({
+      include: [
+        Employee,
+        {
+          model: Client,
+          include: [ClientAuthentication, ClientType],
+        },
+      ],
+      where: { EmployeeID: id },
+    });
+
+    res.json(request);
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
+
 router.post("/requests/assign", async (req, res) => {
   try {
     const id = req.body.id;
     const emp = req.body.employee;
-    console.log(req.body);
 
     const employee = await Employee.findOne({
       where: {
@@ -173,7 +196,6 @@ router.post("/requests/assign", async (req, res) => {
       },
     });
     const employeeEmail = employee.Email;
-    console.log(employeeEmail);
 
     await ServiceRequest.update(
       { EmployeeID: emp },
@@ -183,6 +205,7 @@ router.post("/requests/assign", async (req, res) => {
         },
       }
     );
+
     const emailData = {
       Recipients: { To: [employeeEmail] },
 

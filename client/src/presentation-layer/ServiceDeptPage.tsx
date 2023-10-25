@@ -15,9 +15,9 @@ export default function ServiceDeptPage() {
   const [loading, setLoading] = useState(true);
   const [sideBarData, setSidebarData] = useState<SidebarProps>({
     showButtons: false,
-    tabContent1: <p>Tab 1 content</p>,
-    tabContent2: <p>Tab 2 content</p>,
-    tabContent3: <p>Tab 3 content</p>,
+    tabContent1: <p>Summary</p>,
+    tabContent2: <p>Staff</p>,
+    tabContent3: <p>Client</p>,
   });
 
   //Get all request from the database
@@ -336,7 +336,7 @@ export default function ServiceDeptPage() {
                 {requests
                   ?.filter((x) => x.Staff == null)
                   ?.map((request) => (
-                    <tr>
+                    <tr onClick={() => LoadData(request.RequestID)}>
                       <td>
                         {request.RequestClient.ClientName}{" "}
                         {request.RequestClient.ClientSurname}

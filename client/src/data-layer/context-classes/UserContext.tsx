@@ -8,6 +8,7 @@ import {
 
 interface User {
   username: string;
+  id: string;
   role: string;
 }
 
@@ -43,7 +44,6 @@ export function UserProvider({ children }: UserProviderProps) {
 
   const login = (userData: User) => {
     setUser(userData);
-    console.log(user?.role);
     switch (user?.role) {
       case "Client":
         window.location.replace("/client");

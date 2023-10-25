@@ -28,7 +28,7 @@ export default function LoginPage() {
       if (response.status === 200) {
         console.log("Login successful");
         let user = response.data;
-        login({ username: user.username, role: user.role });
+        login({ username: user.username, role: user.role, id: user.id });
       } else {
         console.log(response.data.message);
       }
