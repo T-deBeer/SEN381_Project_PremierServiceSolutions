@@ -26,10 +26,7 @@ export default function ServiceDeptPage() {
     axios
       .get("/api/get/requests")
       .then((response) => {
-        var data = response.data;
-        data = data.filter((request: ServiceRequest) => {
-          return request.Active == 1;
-        });
+        const data = response.data;
         const serviceRequests = data.map((item: any) => {
           const clientData = item.Client;
           const employeeData = item.Employee;
@@ -213,7 +210,7 @@ export default function ServiceDeptPage() {
     setChangings(false);
   }
   return (
-    <div className={loading? "vh-100" : " vh-100 bg-dark-subtle"}>
+    <div className={loading ? "vh-100" : " vh-100 bg-dark-subtle"}>
       {/*Assign Job Modal*/}
       <div
         className="modal fade"
@@ -290,11 +287,11 @@ export default function ServiceDeptPage() {
               ></button>
             </div>
             <div className="modal-body">
-              <form id="cancelJobForm"
-              onSubmit={SetActive}
-              >
+              <form id="cancelJobForm" onSubmit={SetActive}>
                 <div className="form-group mb-3">
-                  <label htmlFor="worker">Are you sure you want to reject this request?</label>              
+                  <label htmlFor="worker">
+                    Are you sure you want to reject this request?
+                  </label>
                 </div>
                 <div className="d-flex flex-row gap-3 justify-content-center">
                   <button type="submit" className="btn btn-outline-danger w-25">
@@ -305,14 +302,16 @@ export default function ServiceDeptPage() {
                     className="btn btn-outline-dark w-25"
                     data-bs-dismiss="modal"
                     aria-label="Close"
-                  >No</button>
+                  >
+                    No
+                  </button>
                 </div>
               </form>
             </div>
           </div>
         </div>
       </div>
-      {/*Cancel Job Modal ENDS*/}                 
+      {/*Cancel Job Modal ENDS*/}
 
       <Navbar />
 
@@ -399,13 +398,13 @@ export default function ServiceDeptPage() {
                         </button>
                       </td>
                       <td>
-                        <button 
-                        className="btn btn-outline-danger btn-sm"
+                        <button
+                          className="btn btn-outline-danger btn-sm"
                           data-bs-toggle="modal"
                           data-bs-target="#cancelJobModal"
                           data-request={JSON.stringify(request)}
                           onClick={selectRequest}
-                          >
+                        >
                           Cancel Job
                         </button>
                       </td>
