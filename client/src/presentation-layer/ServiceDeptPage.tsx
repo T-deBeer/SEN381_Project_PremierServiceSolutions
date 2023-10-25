@@ -24,17 +24,15 @@ export default function ServiceDeptPage() {
     axios
       .get("/api/get/requests")
       .then((response) => {
-        const data = response.data;
-
+        var data = response.data;
+        data = data.filter((request: ServiceRequest) => {return request.Active == 0});
         const serviceRequests = data.map((item: any) => {
           const clientData = item.Client;
           const employeeData = item.Employee;
           const priority = item.Priority;
           const requestDate = new Date(item.RequestDate);
           const fulfillmentDate = new Date(item.FulfillmentDate);
-          const active = item.Active;
-
-          
+          const active = item.Active;          
             if (employeeData) {
               //Employee is assigned
               let request = new ServiceRequest(
