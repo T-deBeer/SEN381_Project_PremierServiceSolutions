@@ -10,6 +10,8 @@ import ServiceClient from "../data-layer/data-classes/ServiceClient";
 export default function ServiceDeptPage() {
   const [requests, setRequests] = useState<ServiceRequest[]>();
   const [workers, setWorkers] = useState<Staff[]>();
+  var [selectedRequest, setSelectedRequest] = useState<string>();
+  var [selectedEmployee, setSelectedEmployee] = useState<string>();
   const [sideBarData, setSidebarData] = useState<SidebarProps>({
     showButtons: false,
     tabContent1: <p>Tab 1 content</p>,
@@ -162,6 +164,18 @@ export default function ServiceDeptPage() {
     setSidebarData(data);
   }
 
+  function selectRequest(event: any) {
+    setSelectedRequest(JSON.parse(event.target.getAttribute('data-request')).RequestID);
+  }
+
+  async function changeEmp(){                              
+    await axios.post("api/get/requests/assign", {id: selectedRequest, employee: selectedEmployee})
+    .then((res)=>{console.error(res)})
+    .catch((error) => {
+      console.error("Error fetching data:", error);
+    });   
+  }
+
   return (
     <div className="vh-100">
       {/*Assign Job Modal*/}
@@ -186,17 +200,20 @@ export default function ServiceDeptPage() {
               ></button>
             </div>
             <div className="modal-body">
-              <form id="assignJobForm">
+              <form id="assignJobForm"
+              onSubmit={changeEmp}>
                 <div className="form-group mb-3">
                   <label htmlFor="worker">Select Worker:</label>
-                  <select
+                  <select                    
                     className="form-control"
                     id="worker"
                     name="worker"
                     required
+                    value={selectedEmployee}
+                    onChange={(e) => {setSelectedEmployee(e.target.value)}}
                   >
                     {workers?.map((worker) => (
-                      <option
+                      <option                        
                         key={worker.StaffID}
                         value={worker.StaffID}
                         selected={false}
@@ -229,10 +246,11 @@ export default function ServiceDeptPage() {
             <table className="table table-responsive table-dark rounded-3 table-hover">
               <thead>
                 <tr>
-                  <th>Client</th>
-                  <th>Worker</th>
-                  <th>Assign Request</th>
-                  <th>Reject Request</th>
+                    <th>Client</th>
+                    <th>Priority</th>
+                    <th>Date Requested</th>
+                    <th>Assign Request</th>
+                    <th>Reject Request</th>
                 </tr>
               </thead>
               <tbody>
@@ -244,12 +262,21 @@ export default function ServiceDeptPage() {
                         {request.RequestClient.ClientName}{" "}
                         {request.RequestClient.ClientSurname}
                       </td>
-                      <td>None Assigned</td>
+                      <td>{request.Priority}</td>
+                      <td>{request.RequestTime.toLocaleString()}</td>
                       <td>
-                        <button>Assign Job</button>
+                        <button       
+                          className="btn btn-outline-light btn-sm"
+                          data-bs-toggle="modal"
+                          data-bs-target="#assignJobModal"
+                          data-request={JSON.stringify(request)}    
+                          onClick={selectRequest}
+                        >
+                          Assign Job
+                        </button>
                       </td>
                       <td>
-                        <button>Reject Job</button>
+                        <button className="btn btn-outline-danger btn-sm">Reject Job</button>
                       </td>
                     </tr>
                   ))}
@@ -283,7 +310,9 @@ export default function ServiceDeptPage() {
                         <button
                           className="btn btn-outline-light btn-sm"
                           data-bs-toggle="modal"
-                          data-bs-target="#assignJobModal"
+                          data-bs-target="#assignJobModal" 
+                          data-request={JSON.stringify(request)}    
+                          onClick={selectRequest}                  
                         >
                           Re-Assign Job
                         </button>

@@ -33,6 +33,9 @@ const ServiceRequest = sequelize.define(
     FulfillmentDate: {
       type: DataTypes.DATE,
     },
+    Active: {
+      type: DataTypes.INTEGER
+    }
   },
   {
     tableName: "ServiceRequest",
