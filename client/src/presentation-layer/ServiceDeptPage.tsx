@@ -25,7 +25,7 @@ export default function ServiceDeptPage() {
       .get("/api/get/requests")
       .then((response) => {
         var data = response.data;
-        data = data.filter((request: ServiceRequest) => {return request.Active == 0});
+        data = data.filter((request: ServiceRequest) => {return request.Active == 1});
         const serviceRequests = data.map((item: any) => {
           const clientData = item.Client;
           const employeeData = item.Employee;
