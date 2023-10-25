@@ -13,7 +13,7 @@ export default function Sidebar(props: SidebarProps) {
   const user = useUser();
 
   return (
-    <div className="bg-dark rounded-3 d-flex flex-column align-items-center gap-5 h-75 p-1 mt-1">
+    <div className="bg-dark rounded-3 d-flex flex-column align-items-center gap-5 h-100 p-1 mt-1">
       <div className="d-flex flex-column justify-content-center align-items-center gap-1 mt-2">
         <Avatar
           name={user.user?.username}
