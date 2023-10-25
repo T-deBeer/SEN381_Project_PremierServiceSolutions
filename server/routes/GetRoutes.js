@@ -36,6 +36,17 @@ router.get("/employees", async (req, res) => {
   }
 });
 
+router.get("/workers", async (req, res) => {
+  try {
+    const employees = await Employee.findAll({ where: { JobTitle: "Worker" } });
+
+    res.json(employees);
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
+
 router.get("/jobs", async (req, res) => {
   try {
     const jobs = await MaintenanceJob.findAll({
@@ -126,7 +137,13 @@ router.post("/login", async (req, res) => {
 router.get("/requests", async (req, res) => {
   try {
     const request = await ServiceRequest.findAll({
-      include: [Employee, Client],
+      include: [
+        Employee,
+        {
+          model: Client,
+          include: [ClientAuthentication, ClientType],
+        },
+      ],
     });
 
     res.json(request);
@@ -135,4 +152,5 @@ router.get("/requests", async (req, res) => {
     res.status(500).json({ error: "Error retrieving data" });
   }
 });
+
 module.exports = router;

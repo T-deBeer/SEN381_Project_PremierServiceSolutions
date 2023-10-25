@@ -3,15 +3,14 @@ import ServiceClient from './ServiceClient';
 import Staff from './Staff';
 
 class ServiceRequest {
-  RequestID: string;
+  RequestID: number = 0;
   RequestClient: ServiceClient;
-  Staff: Staff|null;
+  Staff: Staff | null = null;
   Priority: number;
   RequestTime: Date;
   FulfillmentDate: Date;
 
-  constructor(client: ServiceClient, priority: number, staff: Staff, serviceRequestTime: Date, serviceFulfillmentTime: Date) {
-    this.RequestID = uuidv4();
+  constructor(client: ServiceClient, priority: number, staff: Staff|null, serviceRequestTime: Date, serviceFulfillmentTime: Date) {
     this.RequestClient = client;
     this.Staff = staff;
     this.Priority = priority;

@@ -1,60 +1,307 @@
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
-import WelcomeDiv from "../components/WelcomeDiv";
-import Sidebar, { SidebarProps }  from "../components/Sidebar";
-import { useUser } from "../data-layer/context-classes/UserContext";
+import Sidebar, { SidebarProps } from "../components/Sidebar";
+import { ReactNode, useEffect, useState } from "react";
+import ServiceRequest from "../data-layer/data-classes/ServiceRequest";
+import axios from "axios";
+import Staff from "../data-layer/data-classes/Staff";
+import ServiceClient from "../data-layer/data-classes/ServiceClient";
 
-export default function LandingPage() {
-    const { user } = useUser();
-    let data: SidebarProps = {
+export default function ServiceDeptPage() {
+  const [requests, setRequests] = useState<ServiceRequest[]>();
+  const [workers, setWorkers] = useState<Staff[]>();
+  const [sideBarData, setSidebarData] = useState<SidebarProps>({
+    showButtons: false,
+    tabContent1: <p>Tab 1 content</p>,
+    tabContent2: <p>Tab 2 content</p>,
+    tabContent3: <p>Tab 3 content</p>,
+  });
+
+  //Get all request from the database
+  useEffect(() => {
+    axios
+      .get("/api/get/requests")
+      .then((response) => {
+        const data = response.data;
+
+        const serviceRequests = data.map((item: any) => {
+          const clientData = item.Client;
+          const employeeData = item.Employee;
+          const priority = item.Priority;
+          const requestDate = new Date(item.RequestDate);
+          const fulfillmentDate = new Date(item.FulfillmentDate);
+
+          if (employeeData) {
+            //Employee is assigned
+            let request = new ServiceRequest(
+              new ServiceClient(
+                clientData.FirstName,
+                clientData.LastName,
+                clientData.ClientAuthentication.Email,
+                clientData.ClientAuthentication.Password,
+                clientData.ClientType.Type
+              ),
+              priority,
+              new Staff(
+                employeeData.FirstName,
+                employeeData.LastName,
+                employeeData.Email,
+                employeeData.Password,
+                employeeData.JobTitle
+              ),
+              requestDate,
+              fulfillmentDate
+            );
+
+            request.RequestID = item.ID;
+            return request;
+          } else {
+            //No employee assigned
+            let request = new ServiceRequest(
+              new ServiceClient(
+                clientData.FirstName,
+                clientData.LastName,
+                clientData.ClientAuthentication.Email,
+                clientData.ClientAuthentication.Password,
+                clientData.ClientType.Type
+              ),
+              priority,
+              null,
+              requestDate,
+              fulfillmentDate
+            );
+
+            request.RequestID = item.ID;
+            return request;
+          }
+        });
+
+        setRequests(serviceRequests);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+  }, []);
+
+  //Get all workers from the database
+  useEffect(() => {
+    axios
+      .get("api/get/workers")
+      .then((response) => {
+        let data = response.data;
+        const serviceWorkers = data.map((item: any) => {
+          let staff = new Staff(
+            item.FirstName,
+            item.LastName,
+            item.Email,
+            item.Password,
+            item.JobTitle
+          );
+          staff.StaffID = item.GUID;
+          return staff;
+        });
+
+        setWorkers(serviceWorkers);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+  }, []);
+
+
+  function LoadData(ID: number) {
+    let request = requests?.filter((x) => x.RequestID == ID)[0];
+    let requestClient = request?.RequestClient;
+    let requestStaff = request?.Staff;
+
+    const tab1Content: ReactNode = (
+      <div className="p-2">
+        <h6>Request ID: {request?.RequestID}</h6>
+        <p>
+          Client: {requestClient?.ClientName} {requestClient?.ClientSurname}
+        </p>
+        <p>
+          Employee: {requestStaff?.StaffName} {requestStaff?.StaffSurname}
+        </p>
+        <p>Request Date: {request?.RequestTime.toLocaleDateString("en-us")}</p>
+        <p>
+          Fulfilment Date:{" "}
+          {request?.FulfillmentDate.toLocaleDateString("en-us")}
+        </p>
+      </div>
+    );
+
+    const tab2Content: ReactNode = (
+      <div className="p-2">
+        <h6>
+          Staff: {requestStaff?.StaffName} {requestStaff?.StaffSurname}
+        </h6>
+        <p>Email: {requestStaff?.Email}</p>
+        <p>Type: {requestStaff?.StaffType}</p>
+      </div>
+    );
+
+    const tab3Content: ReactNode = (
+      <div className="p-2">
+        <h6>
+          Client: {requestClient?.ClientName} {requestClient?.ClientSurname}
+        </h6>
+        <p>Email: {requestClient?.ClientEmail}</p>
+        <p>Type: {requestClient?.ClientType}</p>
+        <p>Number of Contracts: {requestClient?.ClientContracts.length}</p>
+      </div>
+    );
+
+    let data = {
       showButtons: false,
-      tabContent1: <p>Tab 1 content</p>,
-      tabContent2: <p>Tab 2 content</p>,
-      tabContent3: <p>Tab 3 content</p>,
+      tabContent1: tab1Content,
+      tabContent2: tab2Content,
+      tabContent3: tab3Content,
     };
-  
-    return (
-      <div className="vh-100">
-        <Navbar />
-        
-        <div className="d-flex flex-row gap-3 p-2 h-75">
-          <Sidebar {...data} />
-  
-          <div className="flex-grow-1 h-75">
-            <div className="mb-5">
-              <h2>Unassigned Service Request</h2>
-              <table className="table table-responsive table-dark rounded-3 hover">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>Assign Request</th>
-                    <th>Reject Request</th>
-                  </tr>
-                </thead>
-                <tbody></tbody>
-              </table>
+
+    setSidebarData(data);
+  }
+
+  return (
+    <div className="vh-100">
+      {/*Assign Job Modal*/}
+      <div
+        className="modal fade"
+        id="assignJobModal"
+        role="dialog"
+        aria-labelledby="assignJobModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header bg-dark">
+              <h5 className="modal-title text-white" id="assignJobModalLabel">
+                Assign Job
+              </h5>
+              <button
+                type="button"
+                className="btn-close bg-dark-subtle"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
             </div>
-            <div className="mb-2">
-              <h2>Assigned Service Request</h2>
-              <table className="table table-responsive table-dark rounded-3 hover">
-                <thead>
-                  <tr>
-                  <th>#</th>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>Re-Assign Request</th>
-                    <th>Cancel Job</th>
-                  </tr>
-                </thead>
-                <tbody></tbody>
-              </table>
+            <div className="modal-body">
+              <form id="assignJobForm">
+                <div className="form-group mb-3">
+                  <label htmlFor="worker">Select Worker:</label>
+                  <select
+                    className="form-control"
+                    id="worker"
+                    name="worker"
+                    required
+                  >
+                    {workers?.map((worker) => (
+                      <option
+                        key={worker.StaffID}
+                        value={worker.StaffID}
+                        selected={false}
+                      >
+                        {worker.StaffName} {worker.StaffSurname}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="d-flex flex-row justify-content-center align-items-center mt-5">
+                  <button type="submit" className="btn btn-dark w-50">
+                    Assign
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
-  
-        <Footer />
       </div>
-    );
+      {/*Assign Job Modal ENDS*/}
+
+      <Navbar />
+
+      <div className="d-flex flex-row gap-3 p-2 h-75">
+        <Sidebar {...sideBarData} />
+
+        <div className="flex-grow-1 h-75">
+          <div className="mb-5">
+            <h2>Unassigned Service Request</h2>
+            <table className="table table-responsive table-dark rounded-3 table-hover">
+              <thead>
+                <tr>
+                  <th>Client</th>
+                  <th>Worker</th>
+                  <th>Assign Request</th>
+                  <th>Reject Request</th>
+                </tr>
+              </thead>
+              <tbody>
+                {requests
+                  ?.filter((x) => x.Staff == null)
+                  ?.map((request) => (
+                    <tr>
+                      <td>
+                        {request.RequestClient.ClientName}{" "}
+                        {request.RequestClient.ClientSurname}
+                      </td>
+                      <td>None Assigned</td>
+                      <td>
+                        <button>Assign Job</button>
+                      </td>
+                      <td>
+                        <button>Reject Job</button>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="mb-2">
+            <h2>Assigned Service Request</h2>
+            <table className="table table-responsive table-dark rounded-3 table-hover">
+              <thead>
+                <tr>
+                  <th>Client</th>
+                  <th>Worker</th>
+                  <th>Re-Assign Request</th>
+                  <th>Cancel Job</th>
+                </tr>
+              </thead>
+              <tbody>
+                {requests
+                  ?.filter((x) => x.Staff != null)
+                  ?.map((request) => (
+                    <tr onClick={() => LoadData(request.RequestID)}>
+                      <td>
+                        {request.RequestClient.ClientName}{" "}
+                        {request.RequestClient.ClientSurname}
+                      </td>
+                      <td>
+                        {request.Staff?.StaffName} {request.Staff?.StaffSurname}
+                      </td>
+                      <td>
+                        <button
+                          className="btn btn-outline-light btn-sm"
+                          data-bs-toggle="modal"
+                          data-bs-target="#assignJobModal"
+                        >
+                          Re-Assign Job
+                        </button>
+                      </td>
+                      <td>
+                        <button className="btn btn-outline-danger btn-sm">
+                          Cancel Job
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <Footer />
+    </div>
+  );
 }

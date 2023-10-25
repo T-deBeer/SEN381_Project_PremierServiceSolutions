@@ -19,7 +19,7 @@ class ServiceClient {
       password: string,
       clientType: string
     ) {
-      this.ClientID = uuidv4();
+      this.ClientID = "";
       this.ClientName = name;
       this.ClientSurname = surname;
       this.ClientEmail = email;
