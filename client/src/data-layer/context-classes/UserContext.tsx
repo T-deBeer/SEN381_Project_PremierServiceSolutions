@@ -43,6 +43,18 @@ export function UserProvider({ children }: UserProviderProps) {
 
   const login = (userData: User) => {
     setUser(userData);
+    console.log(user?.role);
+    switch (user?.role) {
+      case "Client":
+        window.location.replace("/client");
+        break;
+      case "Service":
+        window.location.replace("/service");
+        break;
+      case "Worker":
+        window.location.replace("/employee");
+        break;
+    }
   };
 
   const signout = () => {
