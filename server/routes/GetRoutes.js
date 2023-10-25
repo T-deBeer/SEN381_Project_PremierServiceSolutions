@@ -212,4 +212,24 @@ router.post("/requests/assign", async (req, res) => {
     res.status(500).json({ error: "Error retrieving data" });
   }
 });
+
+router.post("/requests/active", async (req, res) => {
+  try {
+    const id = req.body.id;
+    const active = req.body.active;
+    console.log(req.body);
+
+    await ServiceRequest.update(
+      { Active: active},
+      {
+        where: {
+          ID: id,
+        },
+      }
+    );
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
 module.exports = router;

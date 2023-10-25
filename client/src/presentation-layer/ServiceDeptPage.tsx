@@ -12,6 +12,7 @@ export default function ServiceDeptPage() {
   const [workers, setWorkers] = useState<Staff[]>();
   var [selectedRequest, setSelectedRequest] = useState<string>();
   var [changings, setChangings] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [sideBarData, setSidebarData] = useState<SidebarProps>({
     showButtons: false,
     tabContent1: <p>Tab 1 content</p>,
@@ -21,6 +22,7 @@ export default function ServiceDeptPage() {
 
   //Get all request from the database
   useEffect(() => {
+    setLoading(true);
     axios
       .get("/api/get/requests")
       .then((response) => {
@@ -87,6 +89,7 @@ export default function ServiceDeptPage() {
       .catch((error) => {
         console.error("Error fetching data:", error);
       });
+    setLoading(false);
   }, [changings]);
 
   //Get all workers from the database
@@ -194,8 +197,23 @@ export default function ServiceDeptPage() {
     setChangings(false);
   }
 
+  async function SetActive() {
+    await axios
+      .post("api/get/requests/active", {
+        id: selectedRequest,
+        active: 0,
+      })
+      .then((res) => {
+        console.error(res);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+    setChangings(true);
+    setChangings(false);
+  }
   return (
-    <div className="vh-100">
+    <div className={loading? "vh-100" : " vh-100 bg-dark-subtle"}>
       {/*Assign Job Modal*/}
       <div
         className="modal fade"
@@ -249,6 +267,52 @@ export default function ServiceDeptPage() {
         </div>
       </div>
       {/*Assign Job Modal ENDS*/}
+
+      {/*Cancel Job Modal*/}
+      <div
+        className="modal fade"
+        id="cancelJobModal"
+        role="dialog"
+        aria-labelledby="cancelJobModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header bg-dark">
+              <h5 className="modal-title text-white" id="cancelJobModalLabel">
+                Cancel Job
+              </h5>
+              <button
+                type="button"
+                className="btn-close bg-dark-subtle"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div className="modal-body">
+              <form id="cancelJobForm"
+              onSubmit={SetActive}
+              >
+                <div className="form-group mb-3">
+                  <label htmlFor="worker">Are you sure you want to reject this request?</label>              
+                </div>
+                <div className="d-flex flex-row gap-3 justify-content-center">
+                  <button type="submit" className="btn btn-outline-danger w-25">
+                    Yes
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-dark w-25"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                  >No</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/*Cancel Job Modal ENDS*/}                 
 
       <Navbar />
 
@@ -335,7 +399,13 @@ export default function ServiceDeptPage() {
                         </button>
                       </td>
                       <td>
-                        <button className="btn btn-outline-danger btn-sm">
+                        <button 
+                        className="btn btn-outline-danger btn-sm"
+                          data-bs-toggle="modal"
+                          data-bs-target="#cancelJobModal"
+                          data-request={JSON.stringify(request)}
+                          onClick={selectRequest}
+                          >
                           Cancel Job
                         </button>
                       </td>
