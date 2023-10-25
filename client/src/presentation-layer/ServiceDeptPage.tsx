@@ -34,7 +34,7 @@ export default function ServiceDeptPage() {
           const fulfillmentDate = new Date(item.FulfillmentDate);
           const active = item.Active;
 
-          if (active == 1) {
+          
             if (employeeData) {
               //Employee is assigned
               let request = new ServiceRequest(
@@ -80,7 +80,7 @@ export default function ServiceDeptPage() {
               request.RequestID = item.ID;
               return request;
             }
-          }
+          
         });
 
         setRequests(serviceRequests);
