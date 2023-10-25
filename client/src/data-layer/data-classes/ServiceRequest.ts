@@ -7,16 +7,16 @@ class ServiceRequest {
   RequestClient: ServiceClient;
   Staff: Staff;
   Priority: number;
-  ServiceRequestTime: Date;
-  ServiceFulfillmentDate: Date;
+  RequestTime: Date;
+  FulfillmentDate: Date;
 
   constructor(client: ServiceClient, priority: number, staff: Staff, serviceRequestTime: Date, serviceFulfillmentTime: Date) {
     this.RequestID = uuidv4();
     this.RequestClient = client;
     this.Staff = staff;
     this.Priority = priority;
-    this.ServiceRequestTime = serviceRequestTime;
-    this.ServiceFulfillmentDate = serviceFulfillmentTime;
+    this.RequestTime = serviceRequestTime;
+    this.FulfillmentDate = serviceFulfillmentTime;
   }
 }
 
