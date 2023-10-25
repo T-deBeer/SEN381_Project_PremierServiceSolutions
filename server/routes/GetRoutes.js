@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
+const dotenv = require("dotenv");
+const axios = require("axios");
 
 const Client = require("../models/Client");
 const ClientType = require("../models/ClientType");
@@ -12,8 +14,14 @@ const ContractType = require("../models/ContractType");
 const ContractStatus = require("../models/ContractStatus");
 const ServiceRequest = require("../models/ServiceRequest");
 
+dotenv.config();
+
+const apiKey = process.env.API_KEY;
+const apiUrl = process.env.API_URL;
+
 router.get("/clients", async (req, res) => {
   try {
+    console.log(apiKey);
     const client = await Client.findAll({
       include: [ClientType, ClientAuthentication],
     });
@@ -158,14 +166,47 @@ router.post("/requests/assign", async (req, res) => {
     const id = req.body.id;
     const emp = req.body.employee;
     console.log(req.body);
-    await ServiceRequest.update({EmployeeID : emp},
+
+    const employee = await Employee.findOne({
+      where: {
+        GUID: emp,
+      },
+    });
+    const employeeEmail = employee.Email;
+    console.log(employeeEmail);
+
+    await ServiceRequest.update(
+      { EmployeeID: emp },
       {
         where: {
           ID: id,
-        }
+        },
       }
     );
-    res.json("Updated");
+    const emailData = {
+      Recipients: { To: [employeeEmail] },
+
+      Content: {
+        Subject: "A Job Has Been Assigned",
+        From: "tdebeer.za@gmail.com",
+        TemplateName: "jobAssignment",
+      },
+    };
+
+    axios
+      .post(apiUrl, emailData, {
+        headers: {
+          "X-ElasticEmail-Apikey": apiKey,
+        },
+      })
+      .then((response) => {
+        res.status(200).send("Email sent successfully");
+        console.log("Email sent successfully");
+      })
+      .catch((error) => {
+        res.status(500).send("Error sending email");
+        console.error("Error sending email:", error);
+      });
   } catch (err) {
     console.error("Error retrieving data:", err);
     res.status(500).json({ error: "Error retrieving data" });

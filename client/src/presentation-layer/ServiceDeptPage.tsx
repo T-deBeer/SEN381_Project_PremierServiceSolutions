@@ -11,7 +11,7 @@ export default function ServiceDeptPage() {
   const [requests, setRequests] = useState<ServiceRequest[]>();
   const [workers, setWorkers] = useState<Staff[]>();
   var [selectedRequest, setSelectedRequest] = useState<string>();
-  var [selectedEmployee, setSelectedEmployee] = useState<string>();
+  var [changings, setChangings] = useState(false);
   const [sideBarData, setSidebarData] = useState<SidebarProps>({
     showButtons: false,
     tabContent1: <p>Tab 1 content</p>,
@@ -25,60 +25,61 @@ export default function ServiceDeptPage() {
       .get("/api/get/requests")
       .then((response) => {
         var data = response.data;
-        data = data.filter((request: ServiceRequest) => {return request.Active == 1});
+        data = data.filter((request: ServiceRequest) => {
+          return request.Active == 1;
+        });
         const serviceRequests = data.map((item: any) => {
           const clientData = item.Client;
           const employeeData = item.Employee;
           const priority = item.Priority;
           const requestDate = new Date(item.RequestDate);
           const fulfillmentDate = new Date(item.FulfillmentDate);
-          const active = item.Active;          
-            if (employeeData) {
-              //Employee is assigned
-              let request = new ServiceRequest(
-                new ServiceClient(
-                  clientData.FirstName,
-                  clientData.LastName,
-                  clientData.ClientAuthentication.Email,
-                  clientData.ClientAuthentication.Password,
-                  clientData.ClientType.Type          
-                ),
-                priority,
-                new Staff(
-                  employeeData.FirstName,
-                  employeeData.LastName,
-                  employeeData.Email,
-                  employeeData.Password,
-                  employeeData.JobTitle
-                ),
-                requestDate,
-                fulfillmentDate,
-                active
-              );
-  
-              request.RequestID = item.ID;
-              return request;
-            } else {
-              //No employee assigned
-              let request = new ServiceRequest(
-                new ServiceClient(
-                  clientData.FirstName,
-                  clientData.LastName,
-                  clientData.ClientAuthentication.Email,
-                  clientData.ClientAuthentication.Password,
-                  clientData.ClientType.Type
-                ),
-                priority,
-                null,
-                requestDate,
-                fulfillmentDate,
-                active
-              );
-  
-              request.RequestID = item.ID;
-              return request;
-            }
-          
+          const active = item.Active;
+          if (employeeData) {
+            //Employee is assigned
+            let request = new ServiceRequest(
+              new ServiceClient(
+                clientData.FirstName,
+                clientData.LastName,
+                clientData.ClientAuthentication.Email,
+                clientData.ClientAuthentication.Password,
+                clientData.ClientType.Type
+              ),
+              priority,
+              new Staff(
+                employeeData.FirstName,
+                employeeData.LastName,
+                employeeData.Email,
+                employeeData.Password,
+                employeeData.JobTitle
+              ),
+              requestDate,
+              fulfillmentDate,
+              active
+            );
+
+            request.RequestID = item.ID;
+            return request;
+          } else {
+            //No employee assigned
+            let request = new ServiceRequest(
+              new ServiceClient(
+                clientData.FirstName,
+                clientData.LastName,
+                clientData.ClientAuthentication.Email,
+                clientData.ClientAuthentication.Password,
+                clientData.ClientType.Type
+              ),
+              priority,
+              null,
+              requestDate,
+              fulfillmentDate,
+              active
+            );
+
+            request.RequestID = item.ID;
+            return request;
+          }
         });
 
         setRequests(serviceRequests);
@@ -86,7 +87,7 @@ export default function ServiceDeptPage() {
       .catch((error) => {
         console.error("Error fetching data:", error);
       });
-  }, []);
+  }, [changings]);
 
   //Get all workers from the database
   useEffect(() => {
@@ -112,7 +113,6 @@ export default function ServiceDeptPage() {
         console.error("Error fetching data:", error);
       });
   }, []);
-
 
   function LoadData(ID: number) {
     let request = requests?.filter((x) => x.RequestID == ID)[0];
@@ -168,15 +168,30 @@ export default function ServiceDeptPage() {
   }
 
   function selectRequest(event: any) {
-    setSelectedRequest(JSON.parse(event.target.getAttribute('data-request')).RequestID);
+    setSelectedRequest(
+      JSON.parse(event.target.getAttribute("data-request")).RequestID
+    );
   }
 
-  async function changeEmp(){                              
-    await axios.post("api/get/requests/assign", {id: selectedRequest, employee: selectedEmployee})
-    .then((res)=>{console.error(res)})
-    .catch((error) => {
-      console.error("Error fetching data:", error);
-    });   
+  async function changeEmp() {
+    const selectElement = document.getElementById(
+      "worker"
+    ) as HTMLSelectElement;
+    const selectedValue = selectElement?.value;
+
+    await axios
+      .post("api/get/requests/assign", {
+        id: selectedRequest,
+        employee: selectedValue,
+      })
+      .then((res) => {
+        console.error(res);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+    setChangings(true);
+    setChangings(false);
   }
 
   return (
@@ -203,20 +218,17 @@ export default function ServiceDeptPage() {
               ></button>
             </div>
             <div className="modal-body">
-              <form id="assignJobForm"
-              onSubmit={changeEmp}>
+              <form id="assignJobForm" onSubmit={changeEmp}>
                 <div className="form-group mb-3">
                   <label htmlFor="worker">Select Worker:</label>
-                  <select                    
+                  <select
                     className="form-control"
                     id="worker"
                     name="worker"
                     required
-                    value={selectedEmployee}
-                    onChange={(e) => {setSelectedEmployee(e.target.value)}}
                   >
                     {workers?.map((worker) => (
-                      <option                        
+                      <option
                         key={worker.StaffID}
                         value={worker.StaffID}
                         selected={false}
@@ -249,11 +261,11 @@ export default function ServiceDeptPage() {
             <table className="table table-responsive table-dark rounded-3 table-hover">
               <thead>
                 <tr>
-                    <th>Client</th>
-                    <th>Priority</th>
-                    <th>Date Requested</th>
-                    <th>Assign Request</th>
-                    <th>Reject Request</th>
+                  <th>Client</th>
+                  <th>Priority</th>
+                  <th>Date Requested</th>
+                  <th>Assign Request</th>
+                  <th>Reject Request</th>
                 </tr>
               </thead>
               <tbody>
@@ -268,18 +280,20 @@ export default function ServiceDeptPage() {
                       <td>{request.Priority}</td>
                       <td>{request.RequestTime.toLocaleString()}</td>
                       <td>
-                        <button       
+                        <button
                           className="btn btn-outline-light btn-sm"
                           data-bs-toggle="modal"
                           data-bs-target="#assignJobModal"
-                          data-request={JSON.stringify(request)}    
+                          data-request={JSON.stringify(request)}
                           onClick={selectRequest}
                         >
                           Assign Job
                         </button>
                       </td>
                       <td>
-                        <button className="btn btn-outline-danger btn-sm">Reject Job</button>
+                        <button className="btn btn-outline-danger btn-sm">
+                          Reject Job
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -313,9 +327,9 @@ export default function ServiceDeptPage() {
                         <button
                           className="btn btn-outline-light btn-sm"
                           data-bs-toggle="modal"
-                          data-bs-target="#assignJobModal" 
-                          data-request={JSON.stringify(request)}    
-                          onClick={selectRequest}                  
+                          data-bs-target="#assignJobModal"
+                          data-request={JSON.stringify(request)}
+                          onClick={selectRequest}
                         >
                           Re-Assign Job
                         </button>
