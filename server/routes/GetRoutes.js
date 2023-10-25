@@ -10,6 +10,7 @@ const MaintenanceJob = require("../models/MaintenanceJob");
 const Contract = require("../models/Contract");
 const ContractType = require("../models/ContractType");
 const ContractStatus = require("../models/ContractStatus");
+const ServiceRequest = require("../models/ServiceRequest");
 
 router.get("/clients", async (req, res) => {
   try {
@@ -118,4 +119,16 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.get("/requests", async (req, res) => {
+  try {
+    const request = await ServiceRequest.findAll({
+      include: [Employee, Client],
+    });
+
+    res.json(request);
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
 module.exports = router;

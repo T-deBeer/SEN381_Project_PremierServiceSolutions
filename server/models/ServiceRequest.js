@@ -10,14 +10,14 @@ const ServiceRequest = sequelize.define(
       type: DataTypes.INTEGER,
       primaryKey: true,
     },
-    Client: {
+    ClientID: {
       type: DataTypes.CHAR(36),
       references: {
         model: "Client",
         key: "GUID",
       },
     },
-    Employee: {
+    EmployeeID: {
       type: DataTypes.CHAR(36),
       references: {
         model: "Employee",
@@ -26,15 +26,12 @@ const ServiceRequest = sequelize.define(
     },
     Priority: {
       type: DataTypes.INTEGER,
-      primaryKey: true,
     },
     RequestDate: {
       type: DataTypes.DATE,
-      primaryKey: true,
     },
     FulfillmentDate: {
       type: DataTypes.DATE,
-      primaryKey: true,
     },
   },
   {
@@ -43,7 +40,7 @@ const ServiceRequest = sequelize.define(
   }
 );
 
-MaintenanceJob.belongsTo(Client, {foreignKey: "GUID"});
-MaintenanceJob.belongsTo(Employee, { foreignKey: "GUID" });
+ServiceRequest.belongsTo(Client, {foreignKey: "ClientID"});
+ServiceRequest.belongsTo(Employee, { foreignKey: "EmployeeID" });
 
 module.exports = ServiceRequest;
