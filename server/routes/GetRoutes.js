@@ -96,6 +96,8 @@ router.post("/login", async (req, res) => {
           username: clientAuth.FirstName + " " + clientAuth.LastName,
           role: "Client",
         });
+      } else {
+        res.status(401).json({ error: "Incorrect email or password" });
       }
     } else if (employee) {
       const isEmployeePasswordValid = await bcrypt.compare(
@@ -108,6 +110,8 @@ router.post("/login", async (req, res) => {
           username: employee.FirstName + " " + employee.LastName,
           role: employee.JobTitle,
         });
+      } else {
+        res.status(401).json({ error: "Incorrect email or password" });
       }
     } else {
       console.log("Incorrect email or password");

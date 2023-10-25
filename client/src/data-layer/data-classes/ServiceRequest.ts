@@ -5,7 +5,7 @@ import Staff from './Staff';
 class ServiceRequest {
   RequestID: string;
   RequestClient: ServiceClient;
-  Staff: Staff;
+  Staff: Staff|null;
   Priority: number;
   RequestTime: Date;
   FulfillmentDate: Date;

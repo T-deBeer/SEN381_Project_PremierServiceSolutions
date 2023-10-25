@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState("");
 
   const handleLogin = async (e: any) => {
     e.preventDefault();
@@ -29,9 +30,10 @@ export default function LoginPage() {
         let user = response.data;
         login({ username: user.username, role: user.role });
       } else {
-        console.log("Login failed");
+        console.log(response.data.message);
       }
     } catch (error) {
+      setHasError("Incorrect email or password");
       console.error("Error while logging in:", error);
     } finally {
       setIsLoading(false);
@@ -48,11 +50,19 @@ export default function LoginPage() {
         ) : (
           <></>
         )}
+
         <form
           className="bg-dark-subtle m-2 rounded-3 p-5 w-50"
           onSubmit={handleLogin} // Use onSubmit to trigger the login function
         >
           <h2 className="text-center mb-5">Log In</h2>
+          {hasError != "" ? (
+            <div className="p-1 text-danger-emphasis bg-danger-subtle border border-danger rounded-3">
+              {hasError}
+            </div>
+          ) : (
+            <></>
+          )}
           <div className="form-floating mb-4">
             <input
               type="email"

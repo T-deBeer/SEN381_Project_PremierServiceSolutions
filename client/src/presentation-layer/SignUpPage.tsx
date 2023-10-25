@@ -25,24 +25,24 @@ export default function LoginPage() {
             <input
               type="text"
               className="form-control"
-              id="fullname"
-              name="fullname"
-              placeholder="Fullname"
+              id="firstName"
+              name="firstName"
+              placeholder="Firstname"
             />
             <label htmlFor="floatingName">
-              Fullname<sup className="text-danger">*</sup>
+              Firstname<sup className="text-danger">*</sup>
             </label>
           </div>
           <div className="form-floating mb-4">
             <input
               type="text"
               className="form-control"
-              id="username"
-              name="username"
-              placeholder="Username"
+              id="lastName"
+              name="lastName"
+              placeholder="Lastname"
             />
             <label htmlFor="floatingName">
-              Username<sup className="text-danger">*</sup>
+              Lastname<sup className="text-danger">*</sup>
             </label>
           </div>
           <div className="form-floating mb-4">
