@@ -12,7 +12,7 @@ export default function LandingPage() {
       tabContent2: <p>Tab 2 content</p>,
       tabContent3: <p>Tab 3 content</p>,
     };
-  
+    
     return (
       <div className="vh-100">
         <Navbar />
@@ -27,9 +27,10 @@ export default function LandingPage() {
                 <thead>
                   <tr>
                     <th>#</th>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>Assign Request</th>
+                    <th>Client</th>
+                    <th>Priority</th>
+                    <th>Date Requested</th>
+                    <th className="">Assign Request</th>
                     <th>Reject Request</th>
                   </tr>
                 </thead>
