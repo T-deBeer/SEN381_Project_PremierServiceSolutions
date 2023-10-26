@@ -21,7 +21,7 @@ const apiUrl = process.env.API_URL;
 
 router.get("/clients", async (req, res) => {
   try {
-    console.log(apiKey);
+    console.log(await bcrypt.hash("1234",10));
     const client = await Client.findAll({
       include: [ClientType, ClientAuthentication],
     });
