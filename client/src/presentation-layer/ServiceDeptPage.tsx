@@ -27,10 +27,7 @@ export default function ServiceDeptPage() {
     await axios
       .get("/api/get/requests")
       .then((response) => {
-        var data = response.data;
-        data = data.filter((request: ServiceRequest) => {
-          return request.Active == 1;
-        });
+        const data = response.data;
         const serviceRequests = data.map((item: any) => {
           const clientData = item.Client;
           const employeeData = item.Employee;
@@ -317,7 +314,9 @@ export default function ServiceDeptPage() {
                     className="btn btn-outline-dark w-25"
                     data-bs-dismiss="modal"
                     aria-label="Close"
-                  >No</button>
+                  >
+                    No
+                  </button>
                 </div>
               </form>
             </div>

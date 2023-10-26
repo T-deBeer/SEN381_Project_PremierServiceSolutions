@@ -154,6 +154,7 @@ router.get("/requests", async (req, res) => {
           include: [ClientAuthentication, ClientType],
         },
       ],
+      where: { Active: 1 },
     });
 
     res.json(request);
@@ -242,14 +243,51 @@ router.post("/requests/active", async (req, res) => {
     const active = req.body.active;
     console.log(req.body);
 
+    let request = await ServiceRequest.findOne({
+      where: {
+        ID: id,
+      },
+    });
     await ServiceRequest.update(
-      { Active: active},
+      { Active: active },
       {
         where: {
           ID: id,
         },
       }
     );
+
+    const employeeID = request.EmployeeID;
+    const employee = await Employee.findOne({
+      where: {
+        GUID: employeeID,
+      },
+    });
+    const employeeEmail = employee.Email;
+    const emailData = {
+      Recipients: { To: [employeeEmail] },
+
+      Content: {
+        Subject: "A Job Has Been Removed",
+        From: "tdebeer.za@gmail.com",
+        TemplateName: "jobRemoval",
+      },
+    };
+
+    axios
+      .post(apiUrl, emailData, {
+        headers: {
+          "X-ElasticEmail-Apikey": apiKey,
+        },
+      })
+      .then((response) => {
+        res.status(200).send("Email sent successfully");
+        console.log("Email sent successfully");
+      })
+      .catch((error) => {
+        res.status(500).send("Error sending email");
+        console.error("Error sending email:", error);
+      });
   } catch (err) {
     console.error("Error retrieving data:", err);
     res.status(500).json({ error: "Error retrieving data" });
