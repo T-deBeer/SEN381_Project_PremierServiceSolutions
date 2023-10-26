@@ -8,6 +8,7 @@ import Staff from "../data-layer/data-classes/Staff";
 import ServiceClient from "../data-layer/data-classes/ServiceClient";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { SplitVendorChunkCache } from "vite";
 
 export default function ServiceDeptPage() {
   const [requests, setRequests] = useState<ServiceRequest[]>();
@@ -35,6 +36,7 @@ export default function ServiceDeptPage() {
           const requestDate = new Date(item.RequestDate);
           const fulfillmentDate = new Date(item.FulfillmentDate);
           const active = item.Active;
+          const sku = item.sku
           if (employeeData) {
             //Employee is assigned
             let request = new ServiceRequest(
@@ -55,7 +57,8 @@ export default function ServiceDeptPage() {
               ),
               requestDate,
               fulfillmentDate,
-              active
+              active,
+              sku
             );
 
             request.RequestID = item.ID;
@@ -74,7 +77,8 @@ export default function ServiceDeptPage() {
               null,
               requestDate,
               fulfillmentDate,
-              active
+              active,
+              sku,
             );
 
             request.RequestID = item.ID;
@@ -337,6 +341,7 @@ export default function ServiceDeptPage() {
                 <tr>
                   <th>Client</th>
                   <th>Priority</th>
+                  <th>Service</th>
                   <th>Date Requested</th>
                   <th>Assign Request</th>
                   <th>Reject Request</th>
@@ -352,6 +357,7 @@ export default function ServiceDeptPage() {
                         {request.RequestClient.ClientSurname}
                       </td>
                       <td>{request.Priority}</td>
+                      <td>{request.SKU}</td>
                       <td>{request.RequestTime.toLocaleString()}</td>
                       <td>
                         <button

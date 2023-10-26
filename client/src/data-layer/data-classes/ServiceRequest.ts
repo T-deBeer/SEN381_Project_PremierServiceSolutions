@@ -10,14 +10,16 @@ class ServiceRequest {
   RequestTime: Date;
   FulfillmentDate: Date;
   Active;
+  SKU: string;
 
-  constructor(client: ServiceClient, priority: number, staff: Staff|null, serviceRequestTime: Date, serviceFulfillmentTime: Date, active: number) {
+  constructor(client: ServiceClient, priority: number, staff: Staff|null, serviceRequestTime: Date, serviceFulfillmentTime: Date, active: number, sku: string) {
     this.RequestClient = client;
     this.Staff = staff;
     this.Priority = priority;
     this.RequestTime = serviceRequestTime;
     this.FulfillmentDate = serviceFulfillmentTime;
     this.Active = active
+    this.SKU = sku;
   }
 }
 
