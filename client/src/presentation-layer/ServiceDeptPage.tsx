@@ -6,13 +6,15 @@ import ServiceRequest from "../data-layer/data-classes/ServiceRequest";
 import axios from "axios";
 import Staff from "../data-layer/data-classes/Staff";
 import ServiceClient from "../data-layer/data-classes/ServiceClient";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 
 export default function ServiceDeptPage() {
   const [requests, setRequests] = useState<ServiceRequest[]>();
   const [workers, setWorkers] = useState<Staff[]>();
   var [selectedRequest, setSelectedRequest] = useState<string>();
   var [changings, setChangings] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setLoading] = useState(false);
   const [sideBarData, setSidebarData] = useState<SidebarProps>({
     showButtons: false,
     tabContent1: <p>Summary</p>,
@@ -20,10 +22,9 @@ export default function ServiceDeptPage() {
     tabContent3: <p>Client</p>,
   });
 
-  //Get all request from the database
-  useEffect(() => {
+  async function getData() {
     setLoading(true);
-    axios
+    await axios
       .get("/api/get/requests")
       .then((response) => {
         var data = response.data;
@@ -89,7 +90,11 @@ export default function ServiceDeptPage() {
       .catch((error) => {
         console.error("Error fetching data:", error);
       });
-    setLoading(false);
+      setLoading(false);
+  }
+  //Get all request from the database
+  useEffect(() => {    
+    getData();    
   }, [changings]);
 
   //Get all workers from the database
@@ -213,7 +218,14 @@ export default function ServiceDeptPage() {
     setChangings(false);
   }
   return (
-    <div className={loading? "vh-100" : " vh-100 bg-dark-subtle"}>
+    <div className={isLoading == true ? "vh-100 bg-dark-subtle opacity-50" : "vh-100" }>
+      {isLoading == true ? (
+      <div className="position-absolute top-50 start-50">
+        <FontAwesomeIcon icon={faSpinner} spin size="10x"/>
+      </div>
+     ) : (
+       <></>
+     )}
       {/*Assign Job Modal*/}
       <div
         className="modal fade"
@@ -291,10 +303,10 @@ export default function ServiceDeptPage() {
             </div>
             <div className="modal-body">
               <form id="cancelJobForm"
-              onSubmit={SetActive}
+                onSubmit={SetActive}
               >
                 <div className="form-group mb-3">
-                  <label htmlFor="worker">Are you sure you want to reject this request?</label>              
+                  <label htmlFor="worker">Are you sure you want to reject this request?</label>
                 </div>
                 <div className="d-flex flex-row gap-3 justify-content-center">
                   <button type="submit" className="btn btn-outline-danger w-25">
@@ -312,10 +324,9 @@ export default function ServiceDeptPage() {
           </div>
         </div>
       </div>
-      {/*Cancel Job Modal ENDS*/}                 
+      {/*Cancel Job Modal ENDS*/}
 
-      <Navbar />
-
+      <Navbar />                       
       <div className="d-flex flex-row gap-3 p-2 h-75">
         <Sidebar {...sideBarData} />
 
@@ -399,13 +410,13 @@ export default function ServiceDeptPage() {
                         </button>
                       </td>
                       <td>
-                        <button 
-                        className="btn btn-outline-danger btn-sm"
+                        <button
+                          className="btn btn-outline-danger btn-sm"
                           data-bs-toggle="modal"
                           data-bs-target="#cancelJobModal"
                           data-request={JSON.stringify(request)}
                           onClick={selectRequest}
-                          >
+                        >
                           Cancel Job
                         </button>
                       </td>
