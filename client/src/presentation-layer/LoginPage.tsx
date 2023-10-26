@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState("");
+  const navi = useNavigate();
 
   const handleLogin = async (e: any) => {
     e.preventDefault();
@@ -25,36 +26,35 @@ export default function LoginPage() {
         email,
         password,
       });
-
+      console.log(response);
       if (response.status === 200) {
         console.log("Login successful");
         let user = response.data;
         login({ username: user.username, role: user.role, id: user.id });
       } else {
+        setHasError("Incorrect email or password");
         console.log(response.data.message);
       }
     } catch (error) {
-      setHasError("Incorrect email or password");
       console.error("Error while logging in:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // useEffect(() => {
-  //   const navi = useNavigate();
-  //   switch (user?.role) {
-  //     case "Client":
-  //       navi("/client");
-  //       break;
-  //     case "Service":
-  //       navi("/service");
-  //       break;
-  //     case "Worker":
-  //       navi("/employee");
-  //       break;
-  //   }
-  // }, [user]);
+  useEffect(() => {
+    switch (user?.role) {
+      case "Client":
+        navi("/client");
+        break;
+      case "Service":
+        navi("/service");
+        break;
+      case "Worker":
+        navi("/employee");
+        break;
+    }
+  }, [user]);
 
   return (
     <div>

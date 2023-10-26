@@ -5,7 +5,6 @@ import {
   useState,
   ReactNode,
 } from "react";
-import { useNavigate } from "react-router-dom";
 
 interface User {
   username: string;
@@ -45,18 +44,6 @@ export function UserProvider({ children }: UserProviderProps) {
 
   const login = (userData: User) => {
     setUser(userData);
-    const navi = useNavigate();
-    switch (user?.role) {
-      case "Client":
-        window.location.replace("/client");
-        break;
-      case "Service":
-        window.location.replace("/service");
-        break;
-      case "Worker":
-        window.location.replace("/employee");
-        break;
-    }
   };
 
   const signout = () => {
