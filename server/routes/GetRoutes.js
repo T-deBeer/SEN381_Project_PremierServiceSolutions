@@ -21,7 +21,6 @@ const apiUrl = process.env.API_URL;
 
 router.get("/clients", async (req, res) => {
   try {
-    console.log(await bcrypt.hash("1234",10));
     const client = await Client.findAll({
       include: [ClientType, ClientAuthentication],
     });
@@ -103,12 +102,14 @@ router.post("/login", async (req, res) => {
       ],
     });
     const employee = await Employee.findOne({ where: { Email: email } });
-
+    console.log(employee);
     if (clientAuth) {
       const isClientPasswordValid = await bcrypt.compare(
         password,
         clientAuth.ClientAuthentication.Password
       );
+      // const isClientPasswordValid =
+      //   password == clientAuth.ClientAuthentication.Password;
       if (isClientPasswordValid) {
         res.status(200).json({
           message: "Login successful",
@@ -124,6 +125,7 @@ router.post("/login", async (req, res) => {
         password,
         employee.Password
       );
+      // const isEmployeePasswordValid = password == employee.Password;
       if (isEmployeePasswordValid) {
         res.status(200).json({
           message: "Login successful",

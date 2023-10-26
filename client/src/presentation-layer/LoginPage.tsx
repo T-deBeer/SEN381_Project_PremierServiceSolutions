@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useUser } from "../data-layer/context-classes/UserContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -6,6 +6,7 @@ import WelcomeDiv from "../components/WelcomeDiv";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
   const { user, login, signout } = useUser();
@@ -39,6 +40,21 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
+  // useEffect(() => {
+  //   const navi = useNavigate();
+  //   switch (user?.role) {
+  //     case "Client":
+  //       navi("/client");
+  //       break;
+  //     case "Service":
+  //       navi("/service");
+  //       break;
+  //     case "Worker":
+  //       navi("/employee");
+  //       break;
+  //   }
+  // }, [user]);
 
   return (
     <div>

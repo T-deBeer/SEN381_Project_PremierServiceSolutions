@@ -48,13 +48,13 @@ export function UserProvider({ children }: UserProviderProps) {
     const navi = useNavigate();
     switch (user?.role) {
       case "Client":
-        navi("/client");
+        window.location.replace("/client");
         break;
       case "Service":
-        navi("/service");
+        window.location.replace("/service");
         break;
       case "Worker":
-        navi("/employee");
+        window.location.replace("/employee");
         break;
     }
   };
