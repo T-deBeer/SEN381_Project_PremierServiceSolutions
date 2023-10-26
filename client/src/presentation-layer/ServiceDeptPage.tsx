@@ -365,7 +365,12 @@ export default function ServiceDeptPage() {
                         </button>
                       </td>
                       <td>
-                        <button className="btn btn-outline-danger btn-sm">
+                        <button 
+                        className="btn btn-outline-danger btn-sm"                           
+                           data-bs-toggle="modal"
+                           data-bs-target="#cancelJobModal"
+                           data-request={JSON.stringify(request)}
+                           onClick={selectRequest}>
                           Reject Job
                         </button>
                       </td>
