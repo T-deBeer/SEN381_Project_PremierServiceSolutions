@@ -26,16 +26,15 @@ export default function LoginPage() {
         email,
         password,
       });
-      console.log(response);
+
       if (response.status === 200) {
         console.log("Login successful");
         let user = response.data;
         login({ username: user.username, role: user.role, id: user.id });
-      } else {
-        setHasError("Incorrect email or password");
-        console.log(response.data.message);
       }
+      
     } catch (error) {
+      setHasError("Incorrect email or password");
       console.error("Error while logging in:", error);
     } finally {
       setIsLoading(false);

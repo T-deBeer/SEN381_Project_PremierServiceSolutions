@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
 const axios = require("axios");
+const { Sequelize, Op } = require("sequelize");
 
 const Client = require("../models/Client");
 const ClientType = require("../models/ClientType");
@@ -101,8 +102,14 @@ router.post("/login", async (req, res) => {
         },
       ],
     });
-    const employee = await Employee.findOne({ where: { Email: email } });
-
+    const employee = await Employee.findOne({
+      where: {
+        Email: {
+          [Op.like]: email, // Case-insensitive search for email
+        },
+      },
+    });
+    console.log(employee.Password);
     if (clientAuth) {
       const isClientPasswordValid = await bcrypt.compare(
         password,

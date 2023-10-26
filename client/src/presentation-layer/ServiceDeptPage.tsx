@@ -83,15 +83,18 @@ export default function ServiceDeptPage() {
         });
 
         setRequests(serviceRequests);
+        setChangings(true);
       })
       .catch((error) => {
         console.error("Error fetching data:", error);
       });
-      setLoading(false);
+    setLoading(false);
+
+    setChangings(false);
   }
   //Get all request from the database
-  useEffect(() => {    
-    getData();    
+  useEffect(() => {
+    getData();
   }, [changings]);
 
   //Get all workers from the database
@@ -215,14 +218,18 @@ export default function ServiceDeptPage() {
     setChangings(false);
   }
   return (
-    <div className={isLoading == true ? "vh-100 bg-dark-subtle opacity-50" : "vh-100" }>
+    <div
+      className={
+        isLoading == true ? "vh-100 bg-dark-subtle opacity-50" : "vh-100"
+      }
+    >
       {isLoading == true ? (
-      <div className="position-absolute top-50 start-50">
-        <FontAwesomeIcon icon={faSpinner} spin size="10x"/>
-      </div>
-     ) : (
-       <></>
-     )}
+        <div className="position-absolute top-50 start-50">
+          <FontAwesomeIcon icon={faSpinner} spin size="10x" />
+        </div>
+      ) : (
+        <></>
+      )}
       {/*Assign Job Modal*/}
       <div
         className="modal fade"
@@ -255,11 +262,7 @@ export default function ServiceDeptPage() {
                     required
                   >
                     {workers?.map((worker) => (
-                      <option
-                        key={worker.StaffID}
-                        value={worker.StaffID}
-                        selected={false}
-                      >
+                      <option key={worker.StaffID} value={worker.StaffID}>
                         {worker.StaffName} {worker.StaffSurname}
                       </option>
                     ))}
@@ -299,11 +302,11 @@ export default function ServiceDeptPage() {
               ></button>
             </div>
             <div className="modal-body">
-              <form id="cancelJobForm"
-                onSubmit={SetActive}
-              >
+              <form id="cancelJobForm" onSubmit={SetActive}>
                 <div className="form-group mb-3">
-                  <label htmlFor="worker">Are you sure you want to reject this request?</label>
+                  <label htmlFor="worker">
+                    Are you sure you want to reject this request?
+                  </label>
                 </div>
                 <div className="d-flex flex-row gap-3 justify-content-center">
                   <button type="submit" className="btn btn-outline-danger w-25">
@@ -325,7 +328,7 @@ export default function ServiceDeptPage() {
       </div>
       {/*Cancel Job Modal ENDS*/}
 
-      <Navbar />                       
+      <Navbar />
       <div className="d-flex flex-row gap-3 p-2 h-75">
         <Sidebar {...sideBarData} />
 
@@ -365,12 +368,13 @@ export default function ServiceDeptPage() {
                         </button>
                       </td>
                       <td>
-                        <button 
-                        className="btn btn-outline-danger btn-sm"                           
-                           data-bs-toggle="modal"
-                           data-bs-target="#cancelJobModal"
-                           data-request={JSON.stringify(request)}
-                           onClick={selectRequest}>
+                        <button
+                          className="btn btn-outline-danger btn-sm"
+                          data-bs-toggle="modal"
+                          data-bs-target="#cancelJobModal"
+                          data-request={JSON.stringify(request)}
+                          onClick={selectRequest}
+                        >
                           Reject Job
                         </button>
                       </td>
