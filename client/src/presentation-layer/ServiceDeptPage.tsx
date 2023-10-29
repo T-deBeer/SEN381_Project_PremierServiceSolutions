@@ -9,6 +9,7 @@ import ServiceClient from "../data-layer/data-classes/ServiceClient";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { SplitVendorChunkCache } from "vite";
+import Sku from "../data-layer/data-classes/Sku";
 
 export default function ServiceDeptPage() {
   const [requests, setRequests] = useState<ServiceRequest[]>();
@@ -36,7 +37,8 @@ export default function ServiceDeptPage() {
           const requestDate = new Date(item.RequestDate);
           const fulfillmentDate = new Date(item.FulfillmentDate);
           const active = item.Active;
-          const sku = item.sku
+          const sku = item.SKU;
+          console.log(item);
           if (employeeData) {
             //Employee is assigned
             let request = new ServiceRequest(
@@ -58,7 +60,11 @@ export default function ServiceDeptPage() {
               requestDate,
               fulfillmentDate,
               active,
-              sku
+              new Sku(
+                sku.Sku,
+                sku.Description,
+                sku.HourlyRate
+              )
             );
 
             request.RequestID = item.ID;
@@ -78,7 +84,11 @@ export default function ServiceDeptPage() {
               requestDate,
               fulfillmentDate,
               active,
-              sku,
+              new Sku(
+                sku.Sku,
+                sku.Description,
+                sku.HourlyRate
+              ),
             );
 
             request.RequestID = item.ID;
@@ -228,7 +238,7 @@ export default function ServiceDeptPage() {
       }
     >
       {isLoading == true ? (
-        <div className="position-absolute top-50 start-50">
+        <div className="position-absolute top-50 start-50 ">
           <FontAwesomeIcon icon={faSpinner} spin size="10x" />
         </div>
       ) : (
@@ -337,7 +347,7 @@ export default function ServiceDeptPage() {
         <Sidebar {...sideBarData} />
 
         <div className="flex-grow-1 h-75">
-          <div className="mb-5">
+          <div className="mb-5 overflow-y-scroll h-75">
             <h2>Unassigned Service Request</h2>
             <table className="table table-responsive table-dark rounded-3 table-hover">
               <thead>
@@ -360,7 +370,7 @@ export default function ServiceDeptPage() {
                         {request.RequestClient.ClientSurname}
                       </td>
                       <td>{request.Priority}</td>
-                      <td>{request.SKU}</td>
+                      <td>{request.SKU.Description}</td>
                       <td>{request.RequestTime.toLocaleString()}</td>
                       <td>
                         <button
@@ -389,13 +399,14 @@ export default function ServiceDeptPage() {
               </tbody>
             </table>
           </div>
-          <div className="mb-2">
+          <div className="mb-2 overflow-y-scroll h-75">
             <h2>Assigned Service Request</h2>
             <table className="table table-responsive table-dark rounded-3 table-hover">
               <thead>
                 <tr>
                   <th>Client</th>
                   <th>Worker</th>
+                  <th>Service</th>
                   <th>Re-Assign Request</th>
                   <th>Cancel Job</th>
                 </tr>
@@ -411,6 +422,9 @@ export default function ServiceDeptPage() {
                       </td>
                       <td>
                         {request.Staff?.StaffName} {request.Staff?.StaffSurname}
+                      </td>
+                      <td>
+                        {request.SKU.Description} 
                       </td>
                       <td>
                         <button
