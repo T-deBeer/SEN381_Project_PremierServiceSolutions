@@ -19,10 +19,6 @@ const Call = sequelize.define(
     Attachment: {
       type: DataTypes.INTEGER,
     },
-    [Employee]: {
-      type: DataTypes.CHAR,
-      length: 36,
-    },
     Start: {
       type: DataTypes.DATE,
     },
