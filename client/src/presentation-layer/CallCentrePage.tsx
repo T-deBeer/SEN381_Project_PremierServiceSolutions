@@ -123,7 +123,7 @@ export default function CallCentrePage() {
                   in place, <b>no</b> maintenance personal required with the
                   support.
                 </p>
-                <a href="#" className="btn btn-dark">
+                <a href="#" className="btn btn-dark btn-sm w-100">
                   LOG SUPPORT CALL
                 </a>
               </div>
@@ -140,7 +140,7 @@ export default function CallCentrePage() {
                   Client is requesting a service to one of their solutions
                   maintenance personal is required to do the service.
                 </p>
-                <a href="#" className="btn btn-dark">
+                <a href="#" className="btn btn-dark btn-sm w-100">
                   LOG SERVICE REQUEST
                 </a>
               </div>
@@ -157,7 +157,7 @@ export default function CallCentrePage() {
                   Client is requesint maintenance or changes to either their
                   contract or Service License Agreement(SLA).
                 </p>
-                <a href="#" className="btn btn-dark">
+                <a href="#" className="btn btn-dark btn-sm w-100">
                   LOG CONTRACT MAINTENANCE
                 </a>
               </div>
@@ -175,8 +175,8 @@ export default function CallCentrePage() {
                   e.g. their details have changed or they have faulty
                   information on the system.
                 </p>
-                <a href="#" className="btn btn-dark">
-                  LOG CLIENT MAINTENANC
+                <a href="#" className="btn btn-dark btn-sm w-100">
+                  LOG CLIENT MAINTENANCE
                 </a>
               </div>
             </div>
