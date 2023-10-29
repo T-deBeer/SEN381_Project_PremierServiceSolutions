@@ -32,7 +32,6 @@ export default function LoginPage() {
         let user = response.data;
         login({ username: user.username, role: user.role, id: user.id });
       }
-      
     } catch (error) {
       setHasError("Incorrect email or password");
       console.error("Error while logging in:", error);
@@ -51,6 +50,9 @@ export default function LoginPage() {
         break;
       case "Worker":
         navi("/employee");
+        break;
+      case "Call":
+        navi("/call");
         break;
     }
   }, [user]);
