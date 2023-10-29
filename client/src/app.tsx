@@ -7,6 +7,7 @@ import SignUpPage from "./presentation-layer/SignUpPage";
 import ClientPage from "./presentation-layer/ClientPage";
 import MaintenancePage from "./presentation-layer/MaintenancePage";
 import EmployeePage from "./presentation-layer/EmployeePage";
+import CallCentrePage from "./presentation-layer/CallCentrePage";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/service" element={<ServiceDeptPage />} />
+        <Route path="/call" element={<CallCentrePage />} />
         <Route path="/client" element={<ClientPage />} />
         <Route path="/employee" element={<EmployeePage />} />
         <Route path="/maintenance" element={<MaintenancePage />} />
