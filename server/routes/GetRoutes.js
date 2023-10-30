@@ -14,6 +14,8 @@ const Contract = require("../models/Contract");
 const ContractType = require("../models/ContractType");
 const ContractStatus = require("../models/ContractStatus");
 const ServiceRequest = require("../models/ServiceRequest");
+const Calls = require("../models/Calls");
+const CallAttachment = require("../models/CallAttachment");
 
 dotenv.config();
 
@@ -86,6 +88,25 @@ router.get("/contracts", async (req, res) => {
   }
 });
 
+router.get("/calls", async (req, res) => {
+  try {
+    const calls = await Calls.findAll({
+      include: [
+        CallAttachment,
+        {
+          model: Client,
+          include: [ClientType, ClientAuthentication],
+        },
+      ],
+    });
+
+    res.json(calls);
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
+
 router.post("/login", async (req, res) => {
   try {
     console.log(req.body);
@@ -109,7 +130,7 @@ router.post("/login", async (req, res) => {
         },
       },
     });
-    console.log(employee.Password);
+
     if (clientAuth) {
       const isClientPasswordValid = await bcrypt.compare(
         password,

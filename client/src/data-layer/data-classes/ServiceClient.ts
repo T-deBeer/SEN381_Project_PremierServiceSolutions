@@ -13,13 +13,14 @@ class ServiceClient {
     ClientContracts: Contract[];
   
     constructor(
+      clientId: string,
       name: string,
       surname: string,
       email: string,
       password: string,
       clientType: string
     ) {
-      this.ClientID = "";
+      this.ClientID = clientId;
       this.ClientName = name;
       this.ClientSurname = surname;
       this.ClientEmail = email;

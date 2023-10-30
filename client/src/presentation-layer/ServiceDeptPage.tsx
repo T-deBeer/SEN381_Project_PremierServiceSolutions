@@ -9,9 +9,12 @@ import ServiceClient from "../data-layer/data-classes/ServiceClient";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { SplitVendorChunkCache } from "vite";
+import DataHandler from "../data-layer/database-call/DataHandler";
+import CustomPagination from "../components/CustomPagination";
 
 export default function ServiceDeptPage() {
-  const [requests, setRequests] = useState<ServiceRequest[]>();
+  const [unRequests, setUnRequests] = useState<ServiceRequest[]>([]);
+  const [anRequest, setAnRequests] = useState<ServiceRequest[]>([]);
   const [workers, setWorkers] = useState<Staff[]>();
   var [selectedRequest, setSelectedRequest] = useState<string>();
   var [changings, setChangings] = useState(false);
@@ -23,108 +26,38 @@ export default function ServiceDeptPage() {
     tabContent3: <p>Client</p>,
   });
 
-  async function getData() {
-    setLoading(true);
-    await axios
-      .get("/api/get/requests")
-      .then((response) => {
-        const data = response.data;
-        const serviceRequests = data.map((item: any) => {
-          const clientData = item.Client;
-          const employeeData = item.Employee;
-          const priority = item.Priority;
-          const requestDate = new Date(item.RequestDate);
-          const fulfillmentDate = new Date(item.FulfillmentDate);
-          const active = item.Active;
-          const sku = item.sku
-          if (employeeData) {
-            //Employee is assigned
-            let request = new ServiceRequest(
-              new ServiceClient(
-                clientData.FirstName,
-                clientData.LastName,
-                clientData.ClientAuthentication.Email,
-                clientData.ClientAuthentication.Password,
-                clientData.ClientType.Type
-              ),
-              priority,
-              new Staff(
-                employeeData.FirstName,
-                employeeData.LastName,
-                employeeData.Email,
-                employeeData.Password,
-                employeeData.JobTitle
-              ),
-              requestDate,
-              fulfillmentDate,
-              active,
-              sku
-            );
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5; // Set the number of items to display per page
 
-            request.RequestID = item.ID;
-            return request;
-          } else {
-            //No employee assigned
-            let request = new ServiceRequest(
-              new ServiceClient(
-                clientData.FirstName,
-                clientData.LastName,
-                clientData.ClientAuthentication.Email,
-                clientData.ClientAuthentication.Password,
-                clientData.ClientType.Type
-              ),
-              priority,
-              null,
-              requestDate,
-              fulfillmentDate,
-              active,
-              sku,
-            );
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  let currentItemsUnassigned = unRequests?.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
 
-            request.RequestID = item.ID;
-            return request;
-          }
-        });
+  const onPageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
 
-        setRequests(serviceRequests);
-        setChangings(true);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
-    setLoading(false);
+  const handler = new DataHandler();
 
-    setChangings(false);
+  async function LoadRequests() {
+    let requests: ServiceRequest[] = await handler.GetServiceRequests();
+    setUnRequests(requests.filter((request) => !request.Staff));
+    setAnRequests(requests.filter((request) => !request.Staff));
+    currentItemsUnassigned = requests?.slice(indexOfFirstItem, indexOfLastItem);
   }
+  async function LoadWorkers() {
+    let workers: Staff[] = await handler.GetWorkers();
+    setWorkers(workers);
+  }
+
   //Get all request from the database
   useEffect(() => {
-    getData();
+    LoadRequests();
+    LoadWorkers();
   }, [changings]);
-
-  //Get all workers from the database
-  useEffect(() => {
-    axios
-      .get("api/get/workers")
-      .then((response) => {
-        let data = response.data;
-        const serviceWorkers = data.map((item: any) => {
-          let staff = new Staff(
-            item.FirstName,
-            item.LastName,
-            item.Email,
-            item.Password,
-            item.JobTitle
-          );
-          staff.StaffID = item.GUID;
-          return staff;
-        });
-
-        setWorkers(serviceWorkers);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
-  }, []);
 
   function LoadData(ID: number) {
     let request = requests?.filter((x) => x.RequestID == ID)[0];
@@ -207,17 +140,10 @@ export default function ServiceDeptPage() {
   }
 
   async function SetActive() {
-    await axios
-      .post("api/get/requests/active", {
-        id: selectedRequest,
-        active: 0,
-      })
-      .then((res) => {
-        console.error(res);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
+    if (selectedRequest) {
+      handler.MarkRequestInactive(selectedRequest);
+    }
+
     setChangings(true);
     setChangings(false);
   }
@@ -337,9 +263,12 @@ export default function ServiceDeptPage() {
         <Sidebar {...sideBarData} />
 
         <div className="flex-grow-1 h-75">
-          <div className="mb-5">
+          <div className="mb-5 d-flex flex-column align-items-center">
             <h2>Unassigned Service Request</h2>
-            <table className="table table-responsive table-dark rounded-3 table-hover">
+            <table
+              className="table table-responsive table-dark rounded-3 table-hover"
+              id="unassigned-table"
+            >
               <thead>
                 <tr>
                   <th>Client</th>
@@ -351,43 +280,47 @@ export default function ServiceDeptPage() {
                 </tr>
               </thead>
               <tbody>
-                {requests
-                  ?.filter((x) => x.Staff == null)
-                  ?.map((request) => (
-                    <tr onClick={() => LoadData(request.RequestID)}>
-                      <td>
-                        {request.RequestClient.ClientName}{" "}
-                        {request.RequestClient.ClientSurname}
-                      </td>
-                      <td>{request.Priority}</td>
-                      <td>{request.SKU}</td>
-                      <td>{request.RequestTime.toLocaleString()}</td>
-                      <td>
-                        <button
-                          className="btn btn-outline-light btn-sm"
-                          data-bs-toggle="modal"
-                          data-bs-target="#assignJobModal"
-                          data-request={JSON.stringify(request)}
-                          onClick={selectRequest}
-                        >
-                          Assign Job
-                        </button>
-                      </td>
-                      <td>
-                        <button
-                          className="btn btn-outline-danger btn-sm"
-                          data-bs-toggle="modal"
-                          data-bs-target="#cancelJobModal"
-                          data-request={JSON.stringify(request)}
-                          onClick={selectRequest}
-                        >
-                          Reject Job
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                {currentItemsUnassigned?.map((request) => (
+                  <tr onClick={() => LoadData(request.RequestID)}>
+                    <td>
+                      {request.RequestClient.ClientName}{" "}
+                      {request.RequestClient.ClientSurname}
+                    </td>
+                    <td>{request.Priority}</td>
+                    <td>{request.SKU}</td>
+                    <td>{request.RequestTime.toLocaleString()}</td>
+                    <td>
+                      <button
+                        className="btn btn-outline-light btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#assignJobModal"
+                        data-request={JSON.stringify(request)}
+                        onClick={selectRequest}
+                      >
+                        Assign Job
+                      </button>
+                    </td>
+                    <td>
+                      <button
+                        className="btn btn-outline-danger btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#cancelJobModal"
+                        data-request={JSON.stringify(request)}
+                        onClick={selectRequest}
+                      >
+                        Reject Job
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
+            <CustomPagination
+              activePage={currentPage}
+              itemsCountPerPage={itemsPerPage}
+              totalItems={unRequests.length}
+              onPageChange={onPageChange}
+            />
           </div>
           <div className="mb-2">
             <h2>Assigned Service Request</h2>
@@ -401,7 +334,7 @@ export default function ServiceDeptPage() {
                 </tr>
               </thead>
               <tbody>
-                {requests
+                {anRequest
                   ?.filter((x) => x.Staff != null)
                   ?.map((request) => (
                     <tr onClick={() => LoadData(request.RequestID)}>
@@ -418,7 +351,9 @@ export default function ServiceDeptPage() {
                           data-bs-toggle="modal"
                           data-bs-target="#assignJobModal"
                           data-request={JSON.stringify(request)}
-                          onClick={selectRequest}
+                          onClick={() =>
+                            setSelectedRequest(request.RequestID.toString())
+                          }
                         >
                           Re-Assign Job
                         </button>
@@ -429,7 +364,9 @@ export default function ServiceDeptPage() {
                           data-bs-toggle="modal"
                           data-bs-target="#cancelJobModal"
                           data-request={JSON.stringify(request)}
-                          onClick={selectRequest}
+                          onClick={() =>
+                            setSelectedRequest(request.RequestID.toString())
+                          }
                         >
                           Cancel Job
                         </button>

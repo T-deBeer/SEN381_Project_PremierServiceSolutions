@@ -12,7 +12,7 @@ const Call = sequelize.define(
       length: 36,
       primaryKey: true,
     },
-    [Client]: {
+    ClientID: {
       type: DataTypes.CHAR,
       length: 36,
     },
@@ -36,8 +36,7 @@ const Call = sequelize.define(
 );
 
 // Define associations
-Call.belongsTo(Client, { foreignKey: "[Client]", targetKey: "GUID" });
+Call.belongsTo(Client, { foreignKey: "ClientID", targetKey: "GUID" });
 Call.belongsTo(Attachment, { foreignKey: "Attachment", targetKey: "ID" });
-Call.belongsTo(Employee, { foreignKey: "[Employee]", targetKey: "GUID" });
 
 module.exports = Call;

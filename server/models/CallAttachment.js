@@ -10,7 +10,7 @@ const CallAttachment = sequelize.define(
       autoIncrement: true,
     },
     Attachment: {
-      type: DataTypes.STRING(30),
+      type: DataTypes.BLOB,
     },
   },
   {

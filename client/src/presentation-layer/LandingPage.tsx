@@ -5,9 +5,6 @@ import { useUser } from "../data-layer/context-classes/UserContext";
 
 export default function LandingPage() {
   const { user, login, signout } = useUser();
-  if (user) {
-    alert("reroute");
-  }
   return (
     <div className="vh-100">
       <Navbar />

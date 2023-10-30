@@ -2,9 +2,28 @@ import Avatar from "react-avatar";
 import { useUser } from "../data-layer/context-classes/UserContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import DataHandler from "../data-layer/database-call/DataHandler";
+import { useEffect, useState } from "react";
+import Call from "../data-layer/data-classes/Call";
 
 export default function CallCentrePage() {
   const { user } = useUser();
+  const [calls, setCalls] = useState<Call[]>();
+  const [currentCall, setCurrentCall] = useState<Call>();
+  const handler = new DataHandler();
+
+  async function LoadCalls() {
+    let calls: Call[] = await handler.GetCalls();
+    setCalls(calls);
+  }
+  async function LoadCallInfo(id: string) {
+    setCurrentCall(calls?.filter((x) => x.CallID === id)[0]);
+  }
+
+  useEffect(() => {
+    LoadCalls();
+  }, []);
+
   return (
     <div className="vh-100">
       <Navbar />
@@ -32,82 +51,84 @@ export default function CallCentrePage() {
         <div className="w-25 overflow-y-scroll overflow-x-auto">
           <h3>Open Calls</h3>
           <div className="accordion accordion-flush" id="accordionFlushExample">
-            <div className="accordion-item">
-              <h2 className="accordion-header">
-                <button
-                  className="accordion-button collapsed"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#flush-collapseOne"
-                  aria-expanded="false"
-                  aria-controls="flush-collapseOne"
+            <div
+              className="accordion accordion-flush"
+              id="accordionFlushExample"
+            >
+              {calls?.map((call, index) => (
+                <div
+                  className="accordion-item"
+                  key={index}
+                  onClick={() => LoadCallInfo(call.CallID)}
                 >
-                  Call #1
-                </button>
-              </h2>
-              <div
-                id="flush-collapseOne"
-                className="accordion-collapse collapse"
-                data-bs-parent="#accordionFlushExample"
-              >
-                <div className="accordion-body">Call Details Appear Here</div>
-              </div>
-            </div>
-            <div className="accordion-item">
-              <h2 className="accordion-header">
-                <button
-                  className="accordion-button collapsed"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#flush-collapseTwo"
-                  aria-expanded="false"
-                  aria-controls="flush-collapseTwo"
-                >
-                  Call #2
-                </button>
-              </h2>
-              <div
-                id="flush-collapseTwo"
-                className="accordion-collapse collapse"
-                data-bs-parent="#accordionFlushExample"
-              >
-                <div className="accordion-body">Call Details Appear Here</div>
-              </div>
-            </div>
-            <div className="accordion-item">
-              <h2 className="accordion-header">
-                <button
-                  className="accordion-button collapsed"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#flush-collapseThree"
-                  aria-expanded="false"
-                  aria-controls="flush-collapseThree"
-                >
-                  Call #3
-                </button>
-              </h2>
-              <div
-                id="flush-collapseThree"
-                className="accordion-collapse collapse"
-                data-bs-parent="#accordionFlushExample"
-              >
-                <div className="accordion-body">Call Details Appear Here</div>
-              </div>
+                  <h2 className="accordion-header">
+                    <button
+                      className="accordion-button collapsed"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target={`#flush-collapse-${index}`}
+                      aria-expanded="false"
+                      aria-controls={`flush-collapse-${index}`}
+                    >
+                      Call #{index + 1}
+                      <sup className="badge text-bg-dark mx-2">
+                        {call.AnswerTime.toLocaleTimeString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "numeric",
+                          hour12: false,
+                        })}
+                      </sup>
+                    </button>
+                  </h2>
+                  <div
+                    id={`flush-collapse-${index}`}
+                    className="accordion-collapse collapse"
+                    data-bs-parent="#accordionFlushExample"
+                  >
+                    <div className="accordion-body">
+                      <p>Call ID: {call.CallID}</p>
+                      <p>
+                        Client Name: {call.CallClient.ClientName}{" "}
+                        {call.CallClient.ClientSurname}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
         {/* Main Seciton */}
         <div className="flex-grow-1 d-flex flex-column align-items-center gap-4">
           {/* CURRENT */}
-          <div className="w-75 bg-dark-subtle rounded-4 p-3">
-            <h2>Current Job</h2>
-            <p>Job Description</p>
-            <div className="d-flex flex-row gap-3">
-              <button className="btn btn-dark btn-sm">Contact Client</button>
-              <button className="btn btn-danger btn-sm">Reject Call</button>
+          {currentCall ? (
+            <div className="w-75 bg-dark-subtle rounded-4 p-3">
+              <h2>
+                Job for {currentCall.CallClient.ClientName}{" "}
+                {currentCall.CallClient.ClientSurname}
+              </h2>
+              <a
+                href={URL.createObjectURL(
+                  new Blob([currentCall.CallAttachments], {
+                    type: "application/pdf",
+                  })
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Download Attachment
+              </a>
+              <div className="d-flex flex-row gap-3">
+                <button className="btn btn-dark btn-sm">Contact Client</button>
+                <button className="btn btn-danger btn-sm">Reject Call</button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <></>
+          )}
+
           {/* CARDS */}
           <div className="d-flex flex-row gap-3 flex-wrap">
             <div className="card" style={{ width: "18rem" }}>
