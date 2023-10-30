@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import ServiceClient from './ServiceClient';
 import Staff from './Staff';
+import SKU from './Sku';
 
 class ServiceRequest {
   RequestID: number = 0;
@@ -10,9 +11,9 @@ class ServiceRequest {
   RequestTime: Date;
   FulfillmentDate: Date;
   Active;
-  SKU: string;
+  SKU: SKU;
 
-  constructor(client: ServiceClient, priority: number, staff: Staff|null, serviceRequestTime: Date, serviceFulfillmentTime: Date, active: number, sku: string) {
+  constructor(client: ServiceClient, priority: number, staff: Staff|null, serviceRequestTime: Date, serviceFulfillmentTime: Date, active: number, sku: SKU) {
     this.RequestClient = client;
     this.Staff = staff;
     this.Priority = priority;

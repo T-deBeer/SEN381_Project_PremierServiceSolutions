@@ -14,6 +14,7 @@ const Contract = require("../models/Contract");
 const ContractType = require("../models/ContractType");
 const ContractStatus = require("../models/ContractStatus");
 const ServiceRequest = require("../models/ServiceRequest");
+const Sku = require("../models/SKU");
 const Calls = require("../models/Calls");
 const CallAttachment = require("../models/CallAttachment");
 
@@ -182,10 +183,10 @@ router.get("/requests", async (req, res) => {
           model: Client,
           include: [ClientAuthentication, ClientType],
         },
+        Sku,
       ],
       where: { Active: 1 },
     });
-
     res.json(request);
   } catch (err) {
     console.error("Error retrieving data:", err);

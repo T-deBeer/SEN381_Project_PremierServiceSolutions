@@ -9,6 +9,7 @@ import ServiceClient from "../data-layer/data-classes/ServiceClient";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { SplitVendorChunkCache } from "vite";
+import Sku from "../data-layer/data-classes/Sku";
 import DataHandler from "../data-layer/database-call/DataHandler";
 import CustomPagination from "../components/CustomPagination";
 
@@ -154,7 +155,7 @@ export default function ServiceDeptPage() {
       }
     >
       {isLoading == true ? (
-        <div className="position-absolute top-50 start-50">
+        <div className="position-absolute top-50 start-50 ">
           <FontAwesomeIcon icon={faSpinner} spin size="10x" />
         </div>
       ) : (
@@ -263,7 +264,7 @@ export default function ServiceDeptPage() {
         <Sidebar {...sideBarData} />
 
         <div className="flex-grow-1 h-75">
-          <div className="mb-5 d-flex flex-column align-items-center">
+          <div className="mb-5 overflow-y-scroll h-75 d-flex flex-column align-items-center">
             <h2>Unassigned Service Request</h2>
             <table
               className="table table-responsive table-dark rounded-3 table-hover"
@@ -280,39 +281,41 @@ export default function ServiceDeptPage() {
                 </tr>
               </thead>
               <tbody>
-                {currentItemsUnassigned?.map((request) => (
-                  <tr onClick={() => LoadData(request.RequestID)}>
-                    <td>
-                      {request.RequestClient.ClientName}{" "}
-                      {request.RequestClient.ClientSurname}
-                    </td>
-                    <td>{request.Priority}</td>
-                    <td>{request.SKU}</td>
-                    <td>{request.RequestTime.toLocaleString()}</td>
-                    <td>
-                      <button
-                        className="btn btn-outline-light btn-sm"
-                        data-bs-toggle="modal"
-                        data-bs-target="#assignJobModal"
-                        data-request={JSON.stringify(request)}
-                        onClick={selectRequest}
-                      >
-                        Assign Job
-                      </button>
-                    </td>
-                    <td>
-                      <button
-                        className="btn btn-outline-danger btn-sm"
-                        data-bs-toggle="modal"
-                        data-bs-target="#cancelJobModal"
-                        data-request={JSON.stringify(request)}
-                        onClick={selectRequest}
-                      >
-                        Reject Job
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {requests
+                  ?.filter((x) => x.Staff == null)
+                  ?.map((request) => (
+                    <tr onClick={() => LoadData(request.RequestID)}>
+                      <td>
+                        {request.RequestClient.ClientName}{" "}
+                        {request.RequestClient.ClientSurname}
+                      </td>
+                      <td>{request.Priority}</td>
+                      <td>{request.SKU}</td>
+                      <td>{request.RequestTime.toLocaleString()}</td>
+                      <td>
+                        <button
+                          className="btn btn-outline-light btn-sm"
+                          data-bs-toggle="modal"
+                          data-bs-target="#assignJobModal"
+                          data-request={JSON.stringify(request)}
+                          onClick={selectRequest}
+                        >
+                          Assign Job
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          className="btn btn-outline-danger btn-sm"
+                          data-bs-toggle="modal"
+                          data-bs-target="#cancelJobModal"
+                          data-request={JSON.stringify(request)}
+                          onClick={selectRequest}
+                        >
+                          Reject Job
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
             <CustomPagination
@@ -322,13 +325,14 @@ export default function ServiceDeptPage() {
               onPageChange={onPageChange}
             />
           </div>
-          <div className="mb-2">
+          <div className="mb-2 overflow-y-scroll h-75">
             <h2>Assigned Service Request</h2>
             <table className="table table-responsive table-dark rounded-3 table-hover">
               <thead>
                 <tr>
                   <th>Client</th>
                   <th>Worker</th>
+                  <th>Service</th>
                   <th>Re-Assign Request</th>
                   <th>Cancel Job</th>
                 </tr>
@@ -344,6 +348,9 @@ export default function ServiceDeptPage() {
                       </td>
                       <td>
                         {request.Staff?.StaffName} {request.Staff?.StaffSurname}
+                      </td>
+                      <td>
+                        {request.SKU.Description} 
                       </td>
                       <td>
                         <button
