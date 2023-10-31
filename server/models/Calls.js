@@ -26,7 +26,8 @@ const Call = sequelize.define(
       type: DataTypes.DATE,
     },
     Type: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.CHAR,
+      length:25,
     },
   },
   {

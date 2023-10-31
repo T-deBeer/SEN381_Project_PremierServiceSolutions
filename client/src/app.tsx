@@ -8,6 +8,7 @@ import ClientPage from "./presentation-layer/ClientPage";
 import MaintenancePage from "./presentation-layer/MaintenancePage";
 import EmployeePage from "./presentation-layer/EmployeePage";
 import CallCentrePage from "./presentation-layer/CallCentrePage";
+import CallBubble from "./components/CallBubble";
 
 export default function App() {
   return (

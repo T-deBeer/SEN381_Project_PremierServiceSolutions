@@ -107,6 +107,26 @@ router.get("/calls", async (req, res) => {
     res.status(500).json({ error: "Error retrieving data" });
   }
 });
+router.get("/calls-by-id/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const calls = await Calls.findAll({
+      include: [
+        CallAttachment,
+        {
+          model: Client,
+          include: [ClientType, ClientAuthentication],
+        },
+      ],
+      where: { ClientID: id },
+    });
+
+    res.json(calls);
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
 
 router.post("/login", async (req, res) => {
   try {

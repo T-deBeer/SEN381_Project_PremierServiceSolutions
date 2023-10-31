@@ -6,13 +6,15 @@ class Call {
     CallID: string;//String will be a GUID
     CallClient: ServiceClient;
     CallAttachments: Blob;
-    AnswerTime: Date;
+    LoggedTime: Date;
+    HandledTime: Date | null;
   
     constructor(client: ServiceClient, attachments: Blob) {
       this.CallID = "";
       this.CallClient = client;
       this.CallAttachments = attachments;
-      this.AnswerTime = new Date();
+      this.LoggedTime = new Date();
+      this.HandledTime = null;
     }
   }
 

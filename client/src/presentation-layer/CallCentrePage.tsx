@@ -5,6 +5,12 @@ import Footer from "../components/Footer";
 import DataHandler from "../data-layer/database-call/DataHandler";
 import { useEffect, useState } from "react";
 import Call from "../data-layer/data-classes/Call";
+import SupportCall from "../business-layer/call-centre/SupportCall";
+import { CallContext } from "../business-layer/call-centre/CallContext";
+import ServiceRequestCall from "../business-layer/call-centre/ServiceRequestCall";
+import ClientDetailChangeCall from "../business-layer/call-centre/ClientDetailChangeCall";
+import ContractCancelationCall from "../business-layer/call-centre/ContractCancellationCall";
+import CallBubble from "../components/CallBubble";
 
 export default function CallCentrePage() {
   const { user } = useUser();
@@ -14,7 +20,8 @@ export default function CallCentrePage() {
 
   async function LoadCalls() {
     let calls: Call[] = await handler.GetCalls();
-    setCalls(calls);
+    console.log(calls);
+    setCalls(calls.filter((x) => x.HandledTime == null));
   }
   async function LoadCallInfo(id: string) {
     setCurrentCall(calls?.filter((x) => x.CallID === id)[0]);
@@ -24,9 +31,36 @@ export default function CallCentrePage() {
     LoadCalls();
   }, []);
 
+  function LogCall(callType: string): void {
+    let callContext: CallContext | null = null;
+
+    switch (callType) {
+      case "support":
+        callContext = new CallContext(new SupportCall());
+        break;
+      case "service-request":
+        callContext = new CallContext(new ServiceRequestCall());
+        break;
+      case "client":
+        callContext = new CallContext(new ClientDetailChangeCall());
+        break;
+      case "contract":
+        callContext = new CallContext(new ContractCancelationCall());
+        break;
+      default:
+        console.error("Unknown call type:", callType);
+        return;
+    }
+
+    if (currentCall != null && callContext != null) {
+      callContext.Handle(currentCall);
+    }
+  }
+
   return (
     <div className="vh-100">
       <Navbar />
+
       <div className="welcome-div  p-2 d-flex flex-row justify-content-between align-items-end">
         <div className="d-flex flex-row align-items-center">
           <Avatar name={user?.username} className="rounded-circle" />
@@ -72,7 +106,7 @@ export default function CallCentrePage() {
                     >
                       Call #{index + 1}
                       <sup className="badge text-bg-dark mx-2">
-                        {call.AnswerTime.toLocaleTimeString("en-US", {
+                        {call.LoggedTime.toLocaleTimeString("en-US", {
                           month: "short",
                           day: "numeric",
                           hour: "numeric",
@@ -144,9 +178,12 @@ export default function CallCentrePage() {
                   in place, <b>no</b> maintenance personal required with the
                   support.
                 </p>
-                <a href="#" className="btn btn-dark btn-sm w-100">
+                <button
+                  onClick={() => LogCall("support")}
+                  className="btn btn-dark btn-sm w-100"
+                >
                   LOG SUPPORT CALL
-                </a>
+                </button>
               </div>
             </div>
             <div className="card" style={{ width: "18rem" }}>
@@ -204,6 +241,7 @@ export default function CallCentrePage() {
           </div>
         </div>
       </div>
+      {calls ? <CallBubble callInfo={calls[0]} /> : <></>}
       <Footer />
     </div>
   );

@@ -22,7 +22,12 @@ export default class DataHandler {
 
         const call = new Call(client, callData.CallAttachment.Attachment);
         call.CallID = callData.GUID;
-        call.AnswerTime = new Date(callData.Start);
+        call.LoggedTime = new Date(callData.Start);
+        if (callData.End) {
+          call.HandledTime = new Date(callData.End);
+        } else {
+          call.HandledTime = null;
+        }
 
         return call;
       });
@@ -30,14 +35,50 @@ export default class DataHandler {
       return calls
         .slice()
         .sort(
-          (a: Call, b: Call) => a.AnswerTime.getTime() - b.AnswerTime.getTime()
+          (a: Call, b: Call) => a.LoggedTime.getTime() - b.LoggedTime.getTime()
         );
     } catch (error) {
       console.error("Error getting calls:", error);
       throw error;
     }
   }
+  async GetCallsByID(id: string | undefined): Promise<Call[]> {
+    try {
+      const response = await axios.get(`/api/get/calls-by-id/${id}`);
+      const callsData = response.data;
 
+      const calls: Call[] = callsData.map((callData: any) => {
+        const client = new ServiceClient(
+          callData.ClientID,
+          callData.Client.FirstName,
+          callData.Client.LastName,
+          callData.Client.ClientAuthentication.Email,
+          callData.Client.ClientAuthentication.Password,
+          callData.Client.ClientType.Type
+        );
+
+        const call = new Call(client, callData.CallAttachment.Attachment);
+        call.CallID = callData.GUID;
+        call.LoggedTime = new Date(callData.Start);
+        if (callData.End) {
+          call.HandledTime = new Date(callData.End);
+        } else {
+          call.HandledTime = null;
+        }
+
+        return call;
+      });
+
+      return calls
+        .slice()
+        .sort(
+          (a: Call, b: Call) => a.LoggedTime.getTime() - b.LoggedTime.getTime()
+        );
+    } catch (error) {
+      console.error("Error getting calls:", error);
+      throw error;
+    }
+  }
   async GetServiceRequests(): Promise<ServiceRequest[]> {
     try {
       const response = await axios.get("/api/get/requests");
@@ -154,7 +195,6 @@ export default class DataHandler {
       throw error;
     }
   }
-
   async GetWorkers(): Promise<Staff[]> {
     try {
       const response = await axios.get("api/get/workers");
@@ -178,7 +218,6 @@ export default class DataHandler {
       throw error;
     }
   }
-
   async MarkRequestInactive(id: string) {
     try {
       const response = await axios.post("api/get/requests/active", {
@@ -190,7 +229,6 @@ export default class DataHandler {
       console.error("Error marking request inactive:", error);
     }
   }
-
   async AttemptLogin(email: string, password: string) {
     try {
       const response = await axios.post("/api/get/login", {
@@ -209,5 +247,18 @@ export default class DataHandler {
       console.error("Login failed:", error);
       throw error;
     }
+  }
+  async AssignRequest(requestID: string | undefined, workerID: string) {
+    await axios
+      .post("api/get/requests/assign", {
+        id: requestID,
+        employee: workerID,
+      })
+      .then((res) => {
+        console.error(res);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
   }
 }

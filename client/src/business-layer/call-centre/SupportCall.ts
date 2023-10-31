@@ -5,6 +5,7 @@ class SupportCall implements HandleCallStrategy {
 
     HandleCall(call:Call): void {
         // Implements loging a Support Call
+        console.log(call)
     }
 }
 

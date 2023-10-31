@@ -1,11 +1,12 @@
 import Call from "../../data-layer/data-classes/Call";
 import HandleCallStrategy from "./HandleCallStrategy";
 
-class CallContext{
+
+export class CallContext{
     CallStrategy: HandleCallStrategy;
 
     constructor(callStrategy: HandleCallStrategy){
-        this.CallStrategy = callStrategy;
+        this.CallStrategy = callStrategy;      
     }
 
     Handle(call: Call): void{

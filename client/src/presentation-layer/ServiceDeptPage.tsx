@@ -139,17 +139,7 @@ export default function ServiceDeptPage() {
     ) as HTMLSelectElement;
     const selectedValue = selectElement?.value;
 
-    await axios
-      .post("api/get/requests/assign", {
-        id: selectedRequest,
-        employee: selectedValue,
-      })
-      .then((res) => {
-        console.error(res);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
+    await handler.AssignRequest(selectedRequest, selectedValue)
     setChangings(true);
     setChangings(false);
   }
