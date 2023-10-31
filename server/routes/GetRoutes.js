@@ -194,9 +194,9 @@ router.get("/requests", async (req, res) => {
   }
 });
 
-router.get("/requests/", async (req, res) => {
+router.get("/requests-by-id/:id", async (req, res) => {
   try {
-    const { id } = req.query;
+    const { id } = req.params;
 
     const request = await ServiceRequest.findAll({
       include: [
@@ -241,7 +241,7 @@ router.post("/requests/assign", async (req, res) => {
       Recipients: { To: [employeeEmail] },
 
       Content: {
-        Subject: "A Job Has Been Assigned",
+        Subject: `A Job has been Assigned [REQUEST ID: ${id}]`,
         From: "tdebeer.za@gmail.com",
         TemplateName: "jobAssignment",
       },
@@ -277,7 +277,34 @@ router.post("/requests/active", async (req, res) => {
       where: {
         ID: id,
       },
+      include: [{ model: Client, include: [ClientAuthentication] }, Employee],
     });
+
+    const clientEmail = request.Client.ClientAuthentication.Email;
+
+    const clientEmailData = {
+      Recipients: { To: [clientEmail] },
+
+      Content: {
+        Subject: `A Service Request Has Canceled [REQUEST ID: ${id}]`,
+        From: "tdebeer.za@gmail.com",
+        TemplateName: "jobRemoval",
+      },
+    };
+
+    axios
+      .post(apiUrl, clientEmailData, {
+        headers: {
+          "X-ElasticEmail-Apikey": apiKey,
+        },
+      })
+      .then((response) => {
+        console.log("Email sent successfully to client");
+      })
+      .catch((error) => {
+        console.error("Error sending email to client:", error);
+      });
+
     await ServiceRequest.update(
       { Active: active },
       {
@@ -287,37 +314,32 @@ router.post("/requests/active", async (req, res) => {
       }
     );
 
-    const employeeID = request.EmployeeID;
-    const employee = await Employee.findOne({
-      where: {
-        GUID: employeeID,
-      },
-    });
-    const employeeEmail = employee.Email;
-    const emailData = {
-      Recipients: { To: [employeeEmail] },
+    if (request.EmployeeID) {
+      const employeeEmail = request.Employee.Email;
+      const emailData = {
+        Recipients: { To: [employeeEmail] },
 
-      Content: {
-        Subject: "A Job Has Been Removed",
-        From: "tdebeer.za@gmail.com",
-        TemplateName: "jobRemoval",
-      },
-    };
-
-    axios
-      .post(apiUrl, emailData, {
-        headers: {
-          "X-ElasticEmail-Apikey": apiKey,
+        Content: {
+          Subject: `A Job Has Been Removed [REQUEST ID: ${id}]`,
+          From: "tdebeer.za@gmail.com",
+          TemplateName: "jobRemoval",
         },
-      })
-      .then((response) => {
-        res.status(200).send("Email sent successfully");
-        console.log("Email sent successfully");
-      })
-      .catch((error) => {
-        res.status(500).send("Error sending email");
-        console.error("Error sending email:", error);
-      });
+      };
+
+      axios
+        .post(apiUrl, emailData, {
+          headers: {
+            "X-ElasticEmail-Apikey": apiKey,
+          },
+        })
+        .then((response) => {
+          console.log("Email sent successfully to employee");
+        })
+        .catch((error) => {
+          console.error("Error sending email to employee:", error);
+        });
+    }
+    res.status(200).send("Job cancelled");
   } catch (err) {
     console.error("Error retrieving data:", err);
     res.status(500).json({ error: "Error retrieving data" });

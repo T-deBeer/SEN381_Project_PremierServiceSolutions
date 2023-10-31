@@ -7,6 +7,7 @@ import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
+import DataHandler from "../data-layer/database-call/DataHandler";
 
 export default function LoginPage() {
   const { user, login, signout } = useUser();
@@ -15,6 +16,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState("");
   const navi = useNavigate();
+  const handler = new DataHandler();
 
   const handleLogin = async (e: any) => {
     e.preventDefault();
@@ -22,16 +24,9 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post("/api/get/login", {
-        email,
-        password,
-      });
-
-      if (response.status === 200) {
-        console.log("Login successful");
-        let user = response.data;
-        login({ username: user.username, role: user.role, id: user.id });
-      }
+      console.log(email, password);
+      let user = await handler.AttemptLogin(email, password);
+      login(user);
     } catch (error) {
       setHasError("Incorrect email or password");
       console.error("Error while logging in:", error);

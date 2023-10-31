@@ -15,7 +15,7 @@ import CustomPagination from "../components/CustomPagination";
 
 export default function ServiceDeptPage() {
   const [unRequests, setUnRequests] = useState<ServiceRequest[]>([]);
-  const [anRequest, setAnRequests] = useState<ServiceRequest[]>([]);
+  const [anRequests, setAnRequests] = useState<ServiceRequest[]>([]);
   const [workers, setWorkers] = useState<Staff[]>();
   var [selectedRequest, setSelectedRequest] = useState<string>();
   var [changings, setChangings] = useState(false);
@@ -28,7 +28,9 @@ export default function ServiceDeptPage() {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5; // Set the number of items to display per page
+  const [currentPageAssigned, setCurrentPageAssigned] = useState(1);
+
+  const itemsPerPage = 5;
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -36,32 +38,44 @@ export default function ServiceDeptPage() {
     indexOfFirstItem,
     indexOfLastItem
   );
+  let currentItemsAssigned = anRequests?.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
 
   const onPageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
+  };
+  const onPageChangeAssigned = (pageNumber: number) => {
+    setCurrentPageAssigned(pageNumber);
   };
 
   const handler = new DataHandler();
 
   async function LoadRequests() {
     let requests: ServiceRequest[] = await handler.GetServiceRequests();
-    setUnRequests(requests.filter((request) => !request.Staff));
-    setAnRequests(requests.filter((request) => !request.Staff));
-    currentItemsUnassigned = requests?.slice(indexOfFirstItem, indexOfLastItem);
+    setUnRequests(requests.filter((request) => request.Staff == null));
+    setAnRequests(requests.filter((request) => request.Staff != null));
+    currentItemsUnassigned = unRequests?.slice(
+      indexOfFirstItem,
+      indexOfLastItem
+    );
+    currentItemsAssigned = anRequests?.slice(indexOfFirstItem, indexOfLastItem);
   }
+
   async function LoadWorkers() {
     let workers: Staff[] = await handler.GetWorkers();
     setWorkers(workers);
   }
 
-  //Get all request from the database
+  //Get data from the database
   useEffect(() => {
     LoadRequests();
     LoadWorkers();
   }, [changings]);
 
   function LoadData(ID: number) {
-    let request = requests?.filter((x) => x.RequestID == ID)[0];
+    let request = anRequests?.filter((x) => x.RequestID == ID)[0];
     let requestClient = request?.RequestClient;
     let requestStaff = request?.Staff;
 
@@ -264,7 +278,7 @@ export default function ServiceDeptPage() {
         <Sidebar {...sideBarData} />
 
         <div className="flex-grow-1 h-75">
-          <div className="mb-5 overflow-y-scroll h-75 d-flex flex-column align-items-center">
+          <div className="h-75 d-flex flex-column">
             <h2>Unassigned Service Request</h2>
             <table
               className="table table-responsive table-dark rounded-3 table-hover"
@@ -281,7 +295,7 @@ export default function ServiceDeptPage() {
                 </tr>
               </thead>
               <tbody>
-                {requests
+                {currentItemsUnassigned
                   ?.filter((x) => x.Staff == null)
                   ?.map((request) => (
                     <tr onClick={() => LoadData(request.RequestID)}>
@@ -290,7 +304,7 @@ export default function ServiceDeptPage() {
                         {request.RequestClient.ClientSurname}
                       </td>
                       <td>{request.Priority}</td>
-                      <td>{request.SKU}</td>
+                      <td>{request.SKU.Description}</td>
                       <td>{request.RequestTime.toLocaleString()}</td>
                       <td>
                         <button
@@ -325,7 +339,7 @@ export default function ServiceDeptPage() {
               onPageChange={onPageChange}
             />
           </div>
-          <div className="mb-2 overflow-y-scroll h-75">
+          <div className="mb-1 h-75 d-flex flex-column">
             <h2>Assigned Service Request</h2>
             <table className="table table-responsive table-dark rounded-3 table-hover">
               <thead>
@@ -338,7 +352,7 @@ export default function ServiceDeptPage() {
                 </tr>
               </thead>
               <tbody>
-                {anRequest
+                {currentItemsAssigned
                   ?.filter((x) => x.Staff != null)
                   ?.map((request) => (
                     <tr onClick={() => LoadData(request.RequestID)}>
@@ -349,9 +363,7 @@ export default function ServiceDeptPage() {
                       <td>
                         {request.Staff?.StaffName} {request.Staff?.StaffSurname}
                       </td>
-                      <td>
-                        {request.SKU.Description} 
-                      </td>
+                      <td>{request.SKU.Description}</td>
                       <td>
                         <button
                           className="btn btn-outline-light btn-sm"
@@ -382,6 +394,12 @@ export default function ServiceDeptPage() {
                   ))}
               </tbody>
             </table>
+            <CustomPagination
+              activePage={currentPageAssigned}
+              itemsCountPerPage={itemsPerPage}
+              totalItems={anRequests.length}
+              onPageChange={onPageChangeAssigned}
+            />
           </div>
         </div>
       </div>

@@ -95,6 +95,65 @@ export default class DataHandler {
       throw error;
     }
   }
+  async GetServiceRequestsByID(
+    id: string | undefined
+  ): Promise<ServiceRequest[]> {
+    try {
+      const response = await axios.get(`/api/get/requests-by-id/${id}`);
+      const requestsData = response.data;
+
+      const serviceRequests: ServiceRequest[] = requestsData.map(
+        (requestData: any) => {
+          const clientData = requestData.Client;
+
+          const client = new ServiceClient(
+            requestData.ClientID,
+            clientData.FirstName,
+            clientData.LastName,
+            clientData.ClientAuthentication.Email,
+            clientData.ClientAuthentication.Password,
+            clientData.ClientType.Type
+          );
+
+          const staffData = requestData.Employee;
+          const staff =
+            staffData != null
+              ? new Staff(
+                  staffData.StaffName,
+                  staffData.StaffSurname,
+                  staffData.Email,
+                  staffData.Password,
+                  staffData.StaffType
+                )
+              : null;
+
+          const serviceRequest = new ServiceRequest(
+            client,
+            requestData.Priority,
+            staff,
+            new Date(requestData.RequestDate),
+            new Date(requestData.FulfillmentDate),
+            requestData.Active,
+            requestData.Sku
+          );
+
+          serviceRequest.RequestID = requestData.ID;
+
+          return serviceRequest;
+        }
+      );
+
+      return serviceRequests
+        .slice()
+        .sort(
+          (a: ServiceRequest, b: ServiceRequest) =>
+            a.RequestTime.getTime() - b.RequestTime.getTime()
+        );
+    } catch (error) {
+      console.error("Error getting service requests:", error);
+      throw error;
+    }
+  }
 
   async GetWorkers(): Promise<Staff[]> {
     try {
@@ -129,6 +188,26 @@ export default class DataHandler {
       console.log(response.data);
     } catch (error) {
       console.error("Error marking request inactive:", error);
+    }
+  }
+
+  async AttemptLogin(email: string, password: string) {
+    try {
+      const response = await axios.post("/api/get/login", {
+        email,
+        password,
+      });
+
+      if (response.status === 200) {
+        console.log("Login successful");
+        let user = response.data;
+        return user; // Return the JSON data
+      }
+
+      // Handle other status codes if needed
+    } catch (error) {
+      console.error("Login failed:", error);
+      throw error;
     }
   }
 }

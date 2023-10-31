@@ -17,7 +17,7 @@ export default function CustomPagination({
   }
 
   return (
-    <Pagination>
+    <Pagination className="align-self-center">
       <Pagination.First
         onClick={() => onPageChange(1)}
         linkClassName="bg-dark text-white"
