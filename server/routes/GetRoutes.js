@@ -376,40 +376,51 @@ router.post("/calls-add", upload.single("file"), async (req, res) => {
   try {
     const { id, type, description } = req.body;
     const { buffer, originalname, mimetype } = req.file;
-    const pdfDoc = await PDFDocument.load(buffer);
-    
-    // Create a new page
-    const [page] = pdfDoc.getPages();
+    if (buffer) {
+      const pdfDoc = await PDFDocument.load(buffer);
 
-    // Add the description text to the new page
-    const fontSize = 12;
-    page.drawText("Description:\n" + description, {
-      x: 50,
-      y: 350,
-      size: fontSize,
-      color: rgb(0, 0, 0), // Black
-    });
+      // Create a new page
+      const [page] = pdfDoc.getPages();
 
-    const modifiedPdfBuffer = await pdfDoc.save();
-    const base64String = Buffer.from(modifiedPdfBuffer).toString("base64");
+      // Add the description text to the new page
+      const fontSize = 12;
+      page.drawText("Description:\n" + description, {
+        x: 50,
+        y: 350,
+        size: fontSize,
+        color: rgb(0, 0, 0), // Black
+      });
 
-    // Save the Base64 encoded PDF to the CallAttachment table
-    const callAttachment = await CallAttachment.create({
-      Attachment: base64String,
-    });
+      const modifiedPdfBuffer = await pdfDoc.save();
+      const base64String = Buffer.from(modifiedPdfBuffer).toString("base64");
 
-    // You now have the `callAttachment.ID` for creating the new call
-    const callAttachmentID = callAttachment.ID;
+      // Save the Base64 encoded PDF to the CallAttachment table
+      const callAttachment = await CallAttachment.create({
+        Attachment: base64String,
+      });
 
-    // Create a new call
-    const newCall = await Calls.create({
-      GUID: uuidv4(),
-      ClientID: id,
-      Attachment: callAttachmentID,
-      Start: new Date(),
-      End: null,
-      Type: type,
-    });
+      // You now have the `callAttachment.ID` for creating the new call
+      const callAttachmentID = callAttachment.ID;
+
+      // Create a new call
+      const newCall = await Calls.create({
+        GUID: uuidv4(),
+        ClientID: id,
+        Attachment: callAttachmentID,
+        Start: new Date(),
+        End: null,
+        Type: type,
+      });
+    } else {
+      const newCall = await Calls.create({
+        GUID: uuidv4(),
+        ClientID: id,
+        Attachment: null,
+        Start: new Date(),
+        End: null,
+        Type: type,
+      });
+    }
 
     res.status(200).send("Call created");
   } catch (err) {
