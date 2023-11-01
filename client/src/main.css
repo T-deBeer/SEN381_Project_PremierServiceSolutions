@@ -11,3 +11,11 @@
   color: black !important;
   background-color: black;
 }
+
+.call-info-hover:hover {
+  background-color: rgb(43, 42, 42) !important;
+}
+
+.textarea {
+  resize: none;
+}

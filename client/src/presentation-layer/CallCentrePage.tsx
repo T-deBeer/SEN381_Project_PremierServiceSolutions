@@ -20,7 +20,6 @@ export default function CallCentrePage() {
 
   async function LoadCalls() {
     let calls: Call[] = await handler.GetCalls();
-    console.log(calls);
     setCalls(calls.filter((x) => x.HandledTime == null));
   }
   async function LoadCallInfo(id: string) {
@@ -144,16 +143,12 @@ export default function CallCentrePage() {
                 {currentCall.CallClient.ClientSurname}
               </h2>
               <a
-                href={URL.createObjectURL(
-                  new Blob([currentCall.CallAttachments], {
-                    type: "application/pdf",
-                  })
-                )}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={`data:application/pdf;base64, ${currentCall.CallAttachments}`}
+                download="modified.pdf"
               >
-                Download Attachment
+                Download call PDF
               </a>
+
               <div className="d-flex flex-row gap-3">
                 <button className="btn btn-dark btn-sm">Contact Client</button>
                 <button className="btn btn-danger btn-sm">Reject Call</button>
@@ -241,7 +236,6 @@ export default function CallCentrePage() {
           </div>
         </div>
       </div>
-      {calls ? <CallBubble callInfo={calls[0]} /> : <></>}
       <Footer />
     </div>
   );

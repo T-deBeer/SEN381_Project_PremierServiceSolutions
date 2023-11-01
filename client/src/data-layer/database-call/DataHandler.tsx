@@ -20,7 +20,11 @@ export default class DataHandler {
           callData.Client.ClientType.Type
         );
 
-        const call = new Call(client, callData.CallAttachment.Attachment);
+        const call = new Call(
+          client,
+          callData.CallAttachment.Attachment,
+          callData.Type
+        );
         call.CallID = callData.GUID;
         call.LoggedTime = new Date(callData.Start);
         if (callData.End) {
@@ -57,7 +61,11 @@ export default class DataHandler {
           callData.Client.ClientType.Type
         );
 
-        const call = new Call(client, callData.CallAttachment.Attachment);
+        const call = new Call(
+          client,
+          callData.CallAttachment.Attachment,
+          callData.Type
+        );
         call.CallID = callData.GUID;
         call.LoggedTime = new Date(callData.Start);
         if (callData.End) {
@@ -260,5 +268,43 @@ export default class DataHandler {
       .catch((error) => {
         console.error("Error fetching data:", error);
       });
+  }
+
+  async CreateCall(
+    id: string | undefined,
+    type: string,
+    description: string,
+    file: FileList | null
+  ) {
+    if (!id) {
+      id = "";
+    }
+    try {
+      const formData = new FormData();
+
+      formData.append("id", id);
+      formData.append("type", type);
+      formData.append("description", description);
+
+      if (file) {
+        formData.append("file", file[0]);
+      }
+      for (const [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
+      const response = await fetch("/api/get/calls-add", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        console.log("Call created successfully");
+      } else {
+        console.error("Error creating a new call");
+      }
+    } catch (error) {
+      console.error("Error creating a new call:", error);
+      throw error;
+    }
   }
 }
