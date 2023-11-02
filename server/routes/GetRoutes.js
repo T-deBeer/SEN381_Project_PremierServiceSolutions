@@ -67,12 +67,7 @@ router.get("/workers", async (req, res) => {
 router.get("/jobs", async (req, res) => {
   try {
     const jobs = await MaintenanceJob.findAll({
-      include: [
-        {
-          model: Contract,
-          include: [ContractType, ContractStatus, Client],
-        },
-      ],
+      include: [Contract, Client],
     });
 
     res.json(jobs);

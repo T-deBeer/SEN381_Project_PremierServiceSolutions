@@ -9,7 +9,7 @@ const JobDifficulty = sequelize.define(
       type: DataTypes.CHAR(36),
       primaryKey: true,
       references: {
-        model: MaintenanceJob,
+        model: "MaintenanceJob",
         key: "GUID",
       },
     },
@@ -23,9 +23,6 @@ const JobDifficulty = sequelize.define(
   }
 );
 
-JobDifficulty.belongsTo(MaintenanceJob, {
-  foreignKey: "MaintenanceJobGUID",
-  targetKey: "GUID",
-});
+
 
 module.exports = JobDifficulty;

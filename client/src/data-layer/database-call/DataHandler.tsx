@@ -3,6 +3,7 @@ import ServiceClient from "../data-classes/ServiceClient";
 import Call from "../data-classes/Call";
 import ServiceRequest from "../data-classes/ServiceRequest";
 import Staff from "../data-classes/Staff";
+import MaintenanceJob from "../data-classes/MaintenanceJob";
 
 export default class DataHandler {
   async GetCalls(): Promise<Call[]> {
@@ -269,7 +270,19 @@ export default class DataHandler {
         console.error("Error fetching data:", error);
       });
   }
-
+  async GetJobs(): Promise<MaintenanceJob[]> {
+    let result: MaintenanceJob[] = [];
+    try {
+      const response = await axios.get("api/get/jobs");
+      const data = response.data;
+      
+      result = data.map();
+      return result;
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      throw error;
+    }
+  }
   async CreateCall(
     id: string | undefined,
     type: string,

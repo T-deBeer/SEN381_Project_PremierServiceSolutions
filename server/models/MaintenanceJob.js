@@ -2,6 +2,8 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config"); // Adjust the path to your Sequelize configuration
 const ContractType = require("./ContractType"); // Import the ContractType model
 const Contract = require("./Contract"); // Import the Contract model
+const Client = require("./Client"); // Import the Contract model
+const JobDifficulty = require("./JobDifficulty");
 
 const MaintenanceJob = sequelize.define(
   "MaintenanceJob",
@@ -10,17 +12,23 @@ const MaintenanceJob = sequelize.define(
       type: DataTypes.CHAR(36),
       primaryKey: true,
     },
-    Type: {
-      type: DataTypes.INTEGER,
-      references: {
-        model: "ContractType",
-        key: "ID",
-      },
-    },
     ContractID: {
       type: DataTypes.CHAR(36),
       references: {
         model: "Contract",
+        key: "GUID",
+      },
+    },
+    Description: {
+      type: DataTypes.STRING,
+    },
+    DifficultyRating: {
+      type: DataTypes.INTEGER,
+    },
+    ClientID: {
+      type: DataTypes.CHAR(36),
+      references: {
+        model: "Client",
         key: "GUID",
       },
     },
@@ -34,6 +42,8 @@ const MaintenanceJob = sequelize.define(
 MaintenanceJob.belongsTo(Contract, {
   foreignKey: "ContractID",
 });
-MaintenanceJob.belongsTo(ContractType, { foreignKey: "Type" });
+MaintenanceJob.belongsTo(Client, {
+  foreignKey: "ClientID",
+});
 
 module.exports = MaintenanceJob;
