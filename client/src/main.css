@@ -12,8 +12,8 @@
   background-color: black;
 }
 
-.call-info-hover:hover {
-  background-color: rgb(43, 42, 42) !important;
+.call-info-hover:hover .child-element {
+  color: whitesmoke !important;
 }
 
 .textarea {

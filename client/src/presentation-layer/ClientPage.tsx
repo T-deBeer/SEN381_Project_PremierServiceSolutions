@@ -6,12 +6,18 @@ import WelcomeDiv from "../components/WelcomeDiv";
 import { useUser } from "../data-layer/context-classes/UserContext";
 import Call from "../data-layer/data-classes/Call";
 import DataHandler from "../data-layer/database-call/DataHandler";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+import { socket } from "../data-layer/context-classes/Socket";
 
 export default function ClientPage() {
   const { user } = useUser();
   const [calls, setCalls] = useState<Call[]>();
   const [userID, setUserID] = useState<string>();
   const [callGroups, setSetCallGroups] = useState<any[]>([]);
+  const [currentCall, setCurrentCall] = useState<Call | null>();
+  const [currentMessage, setCurrentMessage] = useState<string>();
+  const [messages, setMessages] = useState<string[]>([]);
 
   const handler = new DataHandler();
 
@@ -29,10 +35,6 @@ export default function ClientPage() {
 
   useEffect(() => {
     LoadCalls();
-  }, []);
-
-  useEffect(() => {
-    setUserID(user?.id);
   }, [user]);
 
   async function CreateNewCall(e: any) {
@@ -58,6 +60,59 @@ export default function ClientPage() {
         console.error("Error creating a new call:", error);
       }
     }
+  }
+
+  async function sendMessage() {
+    if (currentMessage) {
+      let messageData = {
+        room: currentCall?.CallID,
+        author: user?.username,
+        message: currentMessage,
+        time: new Date(Date.now()).toLocaleTimeString("en-US", {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+          hour12: false,
+        }),
+      };
+      const messageInput = document.getElementById(
+        "message"
+      ) as HTMLInputElement;
+      messageInput.value = "";
+      setCurrentMessage("");
+
+      // Add the user's own message to the chat
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        `Me(${messageData.time}): ${messageData.message}`,
+      ]);
+      socket.emit("send-message", messageData);
+    }
+  }
+
+  useEffect(() => {
+    // Define the event handler function
+    const handleReceiveMessage = (messageData: any) => {
+      console.log(messageData);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        `${messageData.author}(${messageData.time}): ${messageData.message}`,
+      ]);
+    };
+
+    // Bind the event handler
+    socket.on("recieve-message", handleReceiveMessage);
+
+    // Clean up the event handler when the component unmounts
+    return () => {
+      socket.off("recieve-message", handleReceiveMessage);
+    };
+  }, []);
+
+  function joinCall(roomID: string) {
+    socket.emit("join-room", roomID);
+    setMessages([]);
   }
 
   return (
@@ -138,6 +193,71 @@ export default function ClientPage() {
         </div>
       </div>
       {/*Create a new call ENDS*/}
+      {/*live chat window Modal*/}
+      <div
+        className="modal fade"
+        id="chatModal"
+        role="dialog"
+        aria-labelledby="chatModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header bg-dark">
+              <h5 className="modal-title text-white" id="chatModalLabel">
+                {currentCall?.CallClient.ClientName}{" "}
+                {currentCall?.CallClient.ClientSurname}'s Live Chat
+              </h5>
+              <button
+                type="button"
+                className="btn-close bg-dark-subtle"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div className="modal-body">
+              <form id="chatForm">
+                <div className="mb-3">
+                  <label htmlFor="chat" className="form-label">
+                    Chat:
+                  </label>
+                  <textarea
+                    className="form-control textarea mb-3 overflow-y-scroll"
+                    name="chat"
+                    id="chat"
+                    cols={30}
+                    rows={10}
+                    value={messages.join("\n")}
+                    readOnly
+                  ></textarea>
+                </div>
+                <div className="d-flex flex-row justify-content-center align-items-center mt-5">
+                  <input
+                    className="form-control"
+                    type="text"
+                    name="message"
+                    id="message"
+                    onChange={(e) => setCurrentMessage(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-dark"
+                    onClick={sendMessage}
+                  >
+                    <FontAwesomeIcon
+                      icon={faPaperPlane}
+                      color="whitesmoke"
+                      className="text-center call-info-hover"
+                    />
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/*live chat window ENDS*/}
+
       <Navbar />
 
       <div className="welcome-div d-flex flex-column justify-content-center align-items-center gap-3 h-25">
@@ -170,7 +290,14 @@ export default function ClientPage() {
             >
               <div className="d-flex flex-row justify-content-center align-self-center">
                 {group.map((callInfo: Call, callIndex: any) => (
-                  <CallBubble key={callIndex} callInfo={callInfo} />
+                  <CallBubble
+                    key={callIndex}
+                    callInfo={callInfo}
+                    ClickFunction={() => {
+                      setCurrentCall(callInfo);
+                      joinCall(callInfo.CallID);
+                    }}
+                  />
                 ))}
               </div>
             </div>

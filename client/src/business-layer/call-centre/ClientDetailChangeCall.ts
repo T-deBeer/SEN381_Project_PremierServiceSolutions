@@ -1,10 +1,13 @@
 import HandleCallStrategy from "./HandleCallStrategy";
 import Call from "../../data-layer/data-classes/Call";
+import DataHandler from "../../data-layer/database-call/DataHandler";
 
 class ClientDetailChangeCall implements HandleCallStrategy {
 
-    HandleCall(call:Call): void {
-        // Implements loging a Detail Change Call from a client
+    async HandleCall(call:Call): Promise<void> {
+        const handler = new DataHandler();
+       
+        await handler.CreateMaintenanceJob(call,"client");
     }
 }
 

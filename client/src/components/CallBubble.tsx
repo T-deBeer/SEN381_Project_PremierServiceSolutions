@@ -2,20 +2,42 @@ import Call from "../data-layer/data-classes/Call";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPhone } from "@fortawesome/free-solid-svg-icons";
 
-export default function CallBubble({ callInfo }: { callInfo: Call }) {
+export default function CallBubble({
+  callInfo,
+  ClickFunction,
+}: {
+  callInfo: Call;
+  ClickFunction: () => void;
+}) {
   return (
     <div className="d-flex flex-column w-25 align-items-center ">
-      <button className="btn rounded-4 bg-dark-subtle w-50 d-flex flex-row justify-content-center p-2 h-100 call-info-hover">
+      <div className="w-50">
         {callInfo.HandledTime != null ? (
-          <FontAwesomeIcon icon={faPhone} color="red" />
+          <button
+            className="btn btn-outline-dark rounded-4 d-flex flex-row justify-content-center p-2 h-100 w-100"
+            disabled
+          >
+            <FontAwesomeIcon
+              icon={faPhone}
+              color="red"
+              className="fs-1 text-center call-info-hover"
+            />
+          </button>
         ) : (
-          <FontAwesomeIcon
-            icon={faPhone}
-            color="green"
-            className="fs-1 text-center"
-          />
+          <button
+            className="btn btn-outline-dark  rounded-4 d-flex flex-row justify-content-center p-2 h-100 w-100"
+            data-bs-toggle="modal"
+            data-bs-target="#chatModal"
+            onClick={ClickFunction}
+          >
+            <FontAwesomeIcon
+              icon={faPhone}
+              color="green"
+              className="fs-1 text-center"
+            />
+          </button>
         )}
-      </button>
+      </div>
       <div>
         {callInfo.HandledTime != null ? (
           <div className="d-flex flex-column align-items-center">

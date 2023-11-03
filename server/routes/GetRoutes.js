@@ -41,7 +41,6 @@ router.get("/clients", async (req, res) => {
     res.status(500).json({ error: "Error retrieving data" });
   }
 });
-
 router.get("/employees", async (req, res) => {
   try {
     const employees = await Employee.findAll();
@@ -52,7 +51,6 @@ router.get("/employees", async (req, res) => {
     res.status(500).json({ error: "Error retrieving data" });
   }
 });
-
 router.get("/workers", async (req, res) => {
   try {
     const employees = await Employee.findAll({ where: { JobTitle: "Worker" } });
@@ -63,7 +61,6 @@ router.get("/workers", async (req, res) => {
     res.status(500).json({ error: "Error retrieving data" });
   }
 });
-
 router.get("/jobs", async (req, res) => {
   try {
     const jobs = await MaintenanceJob.findAll({
@@ -76,7 +73,6 @@ router.get("/jobs", async (req, res) => {
     res.status(500).json({ error: "Error retrieving data" });
   }
 });
-
 router.get("/contracts", async (req, res) => {
   try {
     const jobs = await Contract.findAll({
@@ -89,7 +85,6 @@ router.get("/contracts", async (req, res) => {
     res.status(500).json({ error: "Error retrieving data" });
   }
 });
-
 router.get("/calls", async (req, res) => {
   try {
     const calls = await Calls.findAll({
@@ -128,7 +123,6 @@ router.get("/calls-by-id/:id", async (req, res) => {
     res.status(500).json({ error: "Error retrieving data" });
   }
 });
-
 router.post("/login", async (req, res) => {
   try {
     console.log(req.body);
@@ -194,7 +188,6 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ error: "Error retrieving data" });
   }
 });
-
 router.get("/requests", async (req, res) => {
   try {
     const request = await ServiceRequest.findAll({
@@ -214,7 +207,6 @@ router.get("/requests", async (req, res) => {
     res.status(500).json({ error: "Error retrieving data" });
   }
 });
-
 router.get("/requests-by-id/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -236,7 +228,6 @@ router.get("/requests-by-id/:id", async (req, res) => {
     res.status(500).json({ error: "Error retrieving data" });
   }
 });
-
 router.post("/requests/assign", async (req, res) => {
   try {
     const id = req.body.id;
@@ -282,6 +273,17 @@ router.post("/requests/assign", async (req, res) => {
         res.status(500).send("Error sending email");
         console.error("Error sending email:", error);
       });
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
+router.post("/call-handle/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await Calls.update({ End: new Date() }, { where: { GUID: id } });
+    res.status(200).send("Call handled");
   } catch (err) {
     console.error("Error retrieving data:", err);
     res.status(500).json({ error: "Error retrieving data" });
@@ -366,7 +368,6 @@ router.post("/requests/active", async (req, res) => {
     res.status(500).json({ error: "Error retrieving data" });
   }
 });
-
 router.post("/calls-add", upload.single("file"), async (req, res) => {
   try {
     const { id, type, description } = req.body;
@@ -423,5 +424,31 @@ router.post("/calls-add", upload.single("file"), async (req, res) => {
     res.status(500).json({ error: "Error retrieving data" });
   }
 });
+router.post("/create-job/:type", async (req, res) => {
+  try {
+    const { type } = req.params;
+    const { call } = req.body;
 
+    let callInfo = JSON.parse(call);
+    const newGUID = uuidv4();
+
+    await MaintenanceJob.create({
+      GUID: newGUID,
+      ContractID: null,
+      Description: `${callInfo.CallClient.ClientName} is a ${callInfo.CallClient.ClientType} and has requested a ${callInfo.CallType}`,
+      DifficultyRating: 1,
+      ClientID: callInfo.CallClient.ClientID,
+      MaintenanceType: type,
+    });
+    await Calls.update(
+      { End: new Date() },
+      { where: { GUID: callInfo.CallID } }
+    );
+
+    res.status(200).send("Maintenance Job Created");
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
 module.exports = router;

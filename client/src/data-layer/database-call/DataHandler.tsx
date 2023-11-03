@@ -275,7 +275,7 @@ export default class DataHandler {
     try {
       const response = await axios.get("api/get/jobs");
       const data = response.data;
-      
+
       result = data.map();
       return result;
     } catch (error) {
@@ -319,5 +319,14 @@ export default class DataHandler {
       console.error("Error creating a new call:", error);
       throw error;
     }
+  }
+
+  async CreateMaintenanceJob(call: Call, type: string) {
+    await axios.post(`/api/get/create-job/${type}`, {
+      call: JSON.stringify(call),
+    });
+  }
+  async MarkCallHandled(id: string) {
+    await axios.post(`/api/get/call-handle/${id}`);
   }
 }

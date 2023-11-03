@@ -1,11 +1,13 @@
 import HandleCallStrategy from "./HandleCallStrategy";
 import Call from "../../data-layer/data-classes/Call";
+import DataHandler from "../../data-layer/database-call/DataHandler";
 
 class SupportCall implements HandleCallStrategy {
 
-    HandleCall(call:Call): void {
+    async HandleCall(call:Call): Promise<void> {
         // Implements loging a Support Call
-        console.log(call)
+        const handler = new DataHandler();
+        await handler.MarkCallHandled(call.CallID);
     }
 }
 
