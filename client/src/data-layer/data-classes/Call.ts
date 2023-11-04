@@ -9,6 +9,7 @@ class Call {
     LoggedTime: Date;
     HandledTime: Date | null;
     CallType: string;
+    CallDescription: string | undefined;
   
     constructor(client: ServiceClient, attachments: string, type: string) {
       this.CallID = "";
@@ -17,6 +18,7 @@ class Call {
       this.LoggedTime = new Date();
       this.HandledTime = null;
       this.CallType = type;
+      this.CallDescription = "";
     }
   }
 

@@ -41,6 +41,46 @@ router.get("/clients", async (req, res) => {
     res.status(500).json({ error: "Error retrieving data" });
   }
 });
+router.post("/create-client", async (req, res) => {
+  try {
+    const { firstName, lastName, email, password } = req.body;
+    const GUID = uuidv4();
+    const passwordHash = (await bcrypt.hash(password, 10)).toString();
+
+    const newClient = await Client.create({
+      GUID: GUID,
+      FirstName: firstName,
+      LastName: lastName,
+      Address: null,
+      Phone: null,
+      Type: 1,
+      Deleted: 0,
+    });
+
+    await ClientAuthentication.create({
+      ClientID: newClient.GUID,
+      Email: email,
+      Password: passwordHash,
+    });
+
+    res.json(newClient);
+  } catch (err) {
+    console.error("Error creating client:", err);
+    res.status(500).json({ error: "Error creating client" });
+  }
+});
+router.get("/client-emails", async (req, res) => {
+  try {
+    const emails = await ClientAuthentication.findAll({
+      attributes: ["Email"],
+    });
+
+    res.json(emails);
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
 router.get("/employees", async (req, res) => {
   try {
     const employees = await Employee.findAll();
@@ -64,7 +104,27 @@ router.get("/workers", async (req, res) => {
 router.get("/jobs", async (req, res) => {
   try {
     const jobs = await MaintenanceJob.findAll({
-      include: [Contract, Client],
+      include: [
+        Contract,
+        { model: Client, include: [ClientAuthentication, ClientType] },
+      ],
+    });
+
+    res.json(jobs);
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
+router.get("/jobs-by-id/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const jobs = await MaintenanceJob.findAll({
+      where: { ClientID: id },
+      include: [
+        Contract,
+        { model: Client, include: [ClientAuthentication, ClientType] },
+      ],
     });
 
     res.json(jobs);
@@ -220,6 +280,27 @@ router.get("/requests-by-id/:id", async (req, res) => {
         },
       ],
       where: { EmployeeID: id },
+    });
+
+    res.json(request);
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
+router.get("/requests-by-id/client/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const request = await ServiceRequest.findAll({
+      include: [
+        Employee,
+        {
+          model: Client,
+          include: [ClientAuthentication, ClientType],
+        },
+      ],
+      where: { ClientID: id },
     });
 
     res.json(request);
@@ -435,7 +516,7 @@ router.post("/create-job/:type", async (req, res) => {
     await MaintenanceJob.create({
       GUID: newGUID,
       ContractID: null,
-      Description: `${callInfo.CallClient.ClientName} is a ${callInfo.CallClient.ClientType} and has requested a ${callInfo.CallType}`,
+      Description: `${callInfo.CallClient.ClientName} is a ${callInfo.CallClient.ClientType}: ${callInfo.CallDescription}`,
       DifficultyRating: 1,
       ClientID: callInfo.CallClient.ClientID,
       MaintenanceType: type,
@@ -446,6 +527,70 @@ router.post("/create-job/:type", async (req, res) => {
     );
 
     res.status(200).send("Maintenance Job Created");
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
+router.post("/create-service-request", async (req, res) => {
+  try {
+    const { call } = req.body;
+
+    let callInfo = JSON.parse(call);
+    let SKU_Reference =
+      callInfo.CallClient.ClientType == "Single Person"
+        ? "SO-RESIDENTIAL-2023"
+        : "SO-COMMERCIAL-2023";
+    console.log(SKU_Reference);
+    await ServiceRequest.create({
+      ClientID: callInfo.CallClient.ClientID,
+      Priority: 1,
+      RequestDate: new Date(Date.now()),
+      FulfillmentDate: new Date(Date.now() + 7),
+      Active: 1,
+      Sku: SKU_Reference,
+    });
+    await Calls.update(
+      { End: new Date() },
+      { where: { GUID: callInfo.CallID } }
+    );
+
+    res.status(200).send("Service Request Created");
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
+router.post("/reject-call", async (req, res) => {
+  try {
+    const { CallID, Email } = req.body;
+
+    await Calls.update({ End: new Date() }, { where: { GUID: CallID } });
+
+    const emailData = {
+      Recipients: { To: [Email] },
+
+      Content: {
+        Subject: `A Call Has Been Rejected [Call ID: ${CallID}]`,
+        From: "tdebeer.za@gmail.com",
+        TemplateName: "callRejected",
+      },
+    };
+
+    axios
+      .post(apiUrl, emailData, {
+        headers: {
+          "X-ElasticEmail-Apikey": apiKey,
+        },
+      })
+      .then((response) => {
+        console.log("Email sent successfully to employee");
+      })
+      .catch((error) => {
+        console.error("Error sending email to employee:", error);
+      });
+
+    res.status(200).send("Call Rejected Created");
   } catch (err) {
     console.error("Error retrieving data:", err);
     res.status(500).json({ error: "Error retrieving data" });

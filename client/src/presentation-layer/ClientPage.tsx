@@ -2,28 +2,40 @@ import { useEffect, useState } from "react";
 import CallBubble from "../components/CallBubble";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
-import WelcomeDiv from "../components/WelcomeDiv";
 import { useUser } from "../data-layer/context-classes/UserContext";
 import Call from "../data-layer/data-classes/Call";
 import DataHandler from "../data-layer/database-call/DataHandler";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import { socket } from "../data-layer/context-classes/Socket";
+import MaintenanceJob from "../data-layer/data-classes/MaintenanceJob";
+import ServiceRequest from "../data-layer/data-classes/ServiceRequest";
+import { Console } from "console";
 
 export default function ClientPage() {
   const { user } = useUser();
   const [calls, setCalls] = useState<Call[]>();
-  const [userID, setUserID] = useState<string>();
+  const [jobs, setJobs] = useState<MaintenanceJob[]>();
+  const [requests, setRequests] = useState<ServiceRequest[]>();
   const [callGroups, setSetCallGroups] = useState<any[]>([]);
   const [currentCall, setCurrentCall] = useState<Call | null>();
   const [currentMessage, setCurrentMessage] = useState<string>();
   const [messages, setMessages] = useState<string[]>([]);
+  const [changings, setChangings] = useState(false);
+  const [search, setSearch] = useState<string>("");
 
   const handler = new DataHandler();
 
-  async function LoadCalls() {
+  async function LoadRequired() {
     let calls: Call[] = await handler.GetCallsByID(user?.id);
+    let jobs: MaintenanceJob[] = await handler.GetJobsByID(user?.id);
+    let requests: ServiceRequest[] = await handler.GetClientRequestsByID(
+      user?.id
+    );
+
     setCalls(calls);
+    setJobs(jobs);
+    setRequests(requests);
 
     let groups: any[] = [];
     for (let i = 0; i < calls.length; i += 3) {
@@ -34,14 +46,51 @@ export default function ClientPage() {
   }
 
   useEffect(() => {
-    LoadCalls();
-  }, [user]);
+    LoadRequired();
+  }, [user, changings]);
+
+  useEffect(() => {
+    const query: string | undefined = search?.toLowerCase();
+
+    if (query != "") {
+      const filteredCalls = calls?.filter((call) => {
+        const dateMatch =
+          call.LoggedTime.getDate() == new Date(query).getDate();
+        const monthMatch = call.LoggedTime.toLocaleDateString("en-us", {
+          month: "long",
+        })
+          .toLowerCase()
+          .includes(query);
+
+        const idMatch = call.CallID.toString().toLowerCase().includes(query);
+
+        return dateMatch || idMatch || monthMatch;
+      });
+
+      if (filteredCalls) {
+        let groups: any[] = [];
+        for (let i = 0; i < filteredCalls?.length; i += 3) {
+          groups.push(filteredCalls.slice(i, i + 3));
+        }
+
+        setSetCallGroups(groups);
+      }
+    } else {
+      if (calls) {
+        let groups: any[] = [];
+        for (let i = 0; i < calls.length; i += 3) {
+          groups.push(calls?.slice(i, i + 3));
+        }
+
+        setSetCallGroups(groups);
+      }
+    }
+  }, [search]);
 
   async function CreateNewCall(e: any) {
     e.preventDefault();
     const form = document.getElementById("newCallForm") as HTMLFormElement;
     if (form) {
-      const formData = new FormData(form);
       const typeInput = document.getElementById("type") as HTMLInputElement;
       const descriptionInput = document.getElementById(
         "description"
@@ -55,7 +104,7 @@ export default function ClientPage() {
       const file = fileInput.files || null;
       try {
         const result = await handler.CreateCall(id, type, description, file);
-        window.location.reload();
+        setChangings(!changings);
       } catch (error) {
         console.error("Error creating a new call:", error);
       }
@@ -92,9 +141,7 @@ export default function ClientPage() {
   }
 
   useEffect(() => {
-    // Define the event handler function
     const handleReceiveMessage = (messageData: any) => {
-      console.log(messageData);
       setMessages((prevMessages) => [
         ...prevMessages,
         `${messageData.author}(${messageData.time}): ${messageData.message}`,
@@ -116,7 +163,7 @@ export default function ClientPage() {
   }
 
   return (
-    <div className="vh-100">
+    <div>
       {/*Create a new call Modal*/}
       <div
         className="modal fade"
@@ -260,7 +307,7 @@ export default function ClientPage() {
 
       <Navbar />
 
-      <div className="welcome-div d-flex flex-column justify-content-center align-items-center gap-3 h-25">
+      <div className="welcome-div d-flex flex-column justify-content-center align-items-center gap-3  p-2">
         <h3 className="text-white">Welcome, {user?.username}</h3>
         <div className="form-floating w-25 ">
           <input
@@ -268,9 +315,12 @@ export default function ClientPage() {
             className="form-control form-control-sm bg-dark-subtle opacity-7"
             id="search"
             name="search"
-            placeholder="Search"
+            placeholder="Search for call"
+            onChange={(e: any) => setSearch(e.target.value)}
           />
-          <label htmlFor="floatingSearch">Search</label>
+          <label htmlFor="floatingSearch bg-dark-subtle opacity-7">
+            Search for call
+          </label>
         </div>
         <button
           className="btn btn-dark w-25"
@@ -280,56 +330,194 @@ export default function ClientPage() {
           Start new call
         </button>
       </div>
-
-      <div id="carousel" className="carousel slide h-25 p-5">
-        <div className="carousel-inner">
-          {callGroups.map((group, index) => (
-            <div
-              key={index}
-              className={index == 0 ? "carousel-item active" : "carousel-item"}
+      <div className="p-1">
+        <ul className="nav nav-tabs">
+          <li className="nav-item">
+            <a
+              className="nav-link text-dark active"
+              aria-current="page"
+              href="#calls"
+              data-toggle="tab"
             >
-              <div className="d-flex flex-row justify-content-center align-self-center">
-                {group.map((callInfo: Call, callIndex: any) => (
-                  <CallBubble
-                    key={callIndex}
-                    callInfo={callInfo}
-                    ClickFunction={() => {
-                      setCurrentCall(callInfo);
-                      joinCall(callInfo.CallID);
-                    }}
-                  />
+              Calls
+              <sup className="badge text-bg-danger mx-1 text-center">
+                {calls?.filter((x) => x.HandledTime == null)?.length}
+              </sup>
+            </a>
+          </li>
+          <li className="nav-item">
+            <a
+              className="nav-link text-dark"
+              href="#maintenance"
+              data-toggle="tab"
+            >
+              Maintenance Jobs
+              <sup className="badge text-bg-danger mx-1 text-center">
+                {jobs?.length}
+              </sup>
+            </a>
+          </li>
+          <li className="nav-item">
+            <a className="nav-link text-dark" href="#service" data-toggle="tab">
+              Service Requests
+              <sup className="badge text-bg-danger mx-1 text-center">
+                {requests?.length}
+              </sup>
+            </a>
+          </li>
+        </ul>
+        <div className="tab-content " id="myTabContent">
+          <div
+            className="tab-pane fade show active"
+            id="calls"
+            role="tabpanel"
+            aria-labelledby="calls-tab"
+          >
+            <div id="carousel" className="carousel slide h-25 p-5">
+              <div className="carousel-inner">
+                {callGroups.map((group, index) => (
+                  <div
+                    key={index}
+                    className={
+                      index == 0 ? "carousel-item active" : "carousel-item"
+                    }
+                  >
+                    <div className="d-flex flex-row justify-content-center align-self-center">
+                      {group.map((callInfo: Call, callIndex: any) => (
+                        <CallBubble
+                          key={callIndex}
+                          callInfo={callInfo}
+                          ClickFunction={() => {
+                            setCurrentCall(callInfo);
+                            joinCall(callInfo.CallID);
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
+              <button
+                className="carousel-control-prev"
+                type="button"
+                data-bs-target="#carousel"
+                data-bs-slide="prev"
+              >
+                <span
+                  className="carousel-control-prev-icon"
+                  aria-hidden="true"
+                ></span>
+                <span className="visually-hidden">Previous</span>
+              </button>
+              <button
+                className="carousel-control-next"
+                type="button"
+                data-bs-target="#carousel"
+                data-bs-slide="next"
+              >
+                <span
+                  className="carousel-control-next-icon"
+                  aria-hidden="true"
+                ></span>
+                <span className="visually-hidden">Next</span>
+              </button>
             </div>
-          ))}
+          </div>
+          <div
+            className="tab-pane fade show"
+            id="maintenance"
+            role="tabpanel"
+            aria-labelledby="maintenance-tab"
+          >
+            <h6>Un-Completed Maintenance jobs </h6>
+            <div
+              className="accordion accordion-flush"
+              id="accordionFlushExample"
+            >
+              {jobs?.map((job, index) => (
+                <div className="accordion-item" key={index}>
+                  <h2 className="accordion-header">
+                    <button
+                      className="accordion-button collapsed"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target={`#flush-collapse-${index}`}
+                      aria-expanded="false"
+                      aria-controls={`flush-collapse-${index}`}
+                    >
+                      Job ID: {job.JobID}
+                    </button>
+                  </h2>
+                  <div
+                    id={`flush-collapse-${index}`}
+                    className="accordion-collapse collapse"
+                    data-bs-parent="#accordionFlushExample"
+                  >
+                    <div className="accordion-body">
+                      <p>Description: {job.Description}</p>
+                      <p>Difficulty Rating: {job.DifficultyRating}</p>
+                      <p>Type: {job.Type}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div
+            className="tab-pane fade show"
+            id="service"
+            role="tabpanel"
+            aria-labelledby="service-tab"
+          >
+            <h6>Un-Completed Service Requests</h6>
+            <div
+              className="accordion accordion-flush"
+              id="accordionFlushServiceRequests"
+            >
+              {requests?.map((request, index) => (
+                <div className="accordion-item" key={index}>
+                  <h2 className="accordion-header">
+                    <button
+                      className="accordion-button collapsed"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target={`#service-request-collapse-${index}`}
+                      aria-expanded="false"
+                      aria-controls={`service-request-collapse-${index}`}
+                    >
+                      Request ID: {request.RequestID}
+                    </button>
+                  </h2>
+                  <div
+                    id={`service-request-collapse-${index}`}
+                    className="accordion-collapse collapse"
+                    data-bs-parent="#accordionFlushServiceRequests"
+                  >
+                    <div className="accordion-body">
+                      <p>
+                        Date Made:{" "}
+                        {request.RequestTime.toLocaleDateString("en-us")}
+                      </p>
+
+                      {request.Staff ? (
+                        <p>
+                          Assigned Staff: {request.Staff.StaffName}{" "}
+                          {request.Staff.StaffSurname}
+                        </p>
+                      ) : (
+                        <p>Assigned Staff: No Staff Assigned Yet.</p>
+                      )}
+                      <p>Priority: {request.Priority}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-        <button
-          className="carousel-control-prev"
-          type="button"
-          data-bs-target="#carousel"
-          data-bs-slide="prev"
-        >
-          <span
-            className="carousel-control-prev-icon"
-            aria-hidden="true"
-          ></span>
-          <span className="visually-hidden">Previous</span>
-        </button>
-        <button
-          className="carousel-control-next"
-          type="button"
-          data-bs-target="#carousel"
-          data-bs-slide="next"
-        >
-          <span
-            className="carousel-control-next-icon"
-            aria-hidden="true"
-          ></span>
-          <span className="visually-hidden">Next</span>
-        </button>
       </div>
 
-      <div className="welcome-div d-flex flex-column justify-content-center align-items-center gap-3 mb-1 p-3 h-25">
+      <div className="welcome-div d-flex flex-column justify-content-center align-items-center gap-3 mb-5 p-3 h-25">
         <textarea
           className="form-control textarea bg-dark-subtle w-25"
           name="feedback"

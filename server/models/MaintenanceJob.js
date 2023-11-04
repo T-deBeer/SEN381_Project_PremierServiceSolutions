@@ -25,6 +25,10 @@ const MaintenanceJob = sequelize.define(
     DifficultyRating: {
       type: DataTypes.INTEGER,
     },
+    MaintenanceType: {
+      type: DataTypes.CHAR,
+      length: 20,
+    },
     ClientID: {
       type: DataTypes.CHAR(36),
       references: {

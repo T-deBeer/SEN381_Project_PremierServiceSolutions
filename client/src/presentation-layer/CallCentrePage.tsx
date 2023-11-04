@@ -24,6 +24,7 @@ export default function CallCentrePage() {
   const handler = new DataHandler();
   const [currentMessage, setCurrentMessage] = useState<string>();
   const [messages, setMessages] = useState<string[]>([]);
+  const [callDescription, setCallsDescription] = useState<string>();
 
   async function LoadCalls() {
     let calls: Call[] = await handler.GetCalls();
@@ -92,7 +93,6 @@ export default function CallCentrePage() {
 
   function LogCall(callType: string): void {
     let callContext: CallContext | null = null;
-    //alert(`Call ${callType}`);
     switch (callType) {
       case "support":
         callContext = new CallContext(new SupportCall());
@@ -112,10 +112,19 @@ export default function CallCentrePage() {
     }
 
     if (currentCall != null && callContext != null) {
+      currentCall.CallDescription = callDescription;
       callContext.Handle(currentCall);
+
       setHandled(!handled);
       setCurrentCall(null);
+      setCallsDescription("");
     }
+  }
+
+  function RejectCall(id: string, email: string) {
+    handler.RejectCall(id, email);
+    setHandled(!handled);
+    setCurrentCall(null);
   }
 
   return (
@@ -158,6 +167,7 @@ export default function CallCentrePage() {
                     rows={10}
                     placeholder="Type a description for this job..."
                     required
+                    onChange={(e) => setCallsDescription(e.target.value)}
                   ></textarea>
                 </div>
                 <div className="d-flex flex-row justify-content-center align-items-center mt-5">
@@ -322,13 +332,17 @@ export default function CallCentrePage() {
                 Job for {currentCall.CallClient.ClientName}{" "}
                 {currentCall.CallClient.ClientSurname}
               </h2>
-              <a
-                href={`data:application/pdf;base64, ${currentCall.CallAttachments}`}
-                download="Call.pdf"
-              >
-                Download call PDF
-              </a>
-
+              <div>
+                <p>
+                  Job Type: <b>{currentCall.CallType}</b>
+                </p>
+                <a
+                  href={`data:application/pdf;base64, ${currentCall.CallAttachments}`}
+                  download="Call.pdf"
+                >
+                  Download call PDF
+                </a>
+              </div>
               <div className="d-flex flex-row gap-3">
                 <button
                   className="btn btn-dark btn-sm"
@@ -338,7 +352,17 @@ export default function CallCentrePage() {
                 >
                   Contact Client
                 </button>
-                <button className="btn btn-danger btn-sm">Reject Call</button>
+                <button
+                  className="btn btn-danger btn-sm"
+                  onClick={() =>
+                    RejectCall(
+                      currentCall.CallID,
+                      currentCall.CallClient.ClientEmail
+                    )
+                  }
+                >
+                  Reject Call
+                </button>
               </div>
             </div>
           ) : (

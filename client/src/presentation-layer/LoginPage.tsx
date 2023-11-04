@@ -46,11 +46,19 @@ export default function LoginPage() {
       case "Worker":
         navi("/employee");
         break;
+      case "Maintenance":
+        navi("/maintenance");
+        break;
       case "Call":
         navi("/call");
         break;
     }
   }, [user]);
+
+  function ClearForm() {
+    setEmail("");
+    setPassword("");
+  }
 
   return (
     <div>
@@ -113,6 +121,7 @@ export default function LoginPage() {
               type="button"
               className="btn btn-outline-danger btn-lg"
               id="cancel"
+              onClick={ClearForm}
             >
               Cancel
             </button>

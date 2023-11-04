@@ -4,8 +4,12 @@ import Call from "../data-classes/Call";
 import ServiceRequest from "../data-classes/ServiceRequest";
 import Staff from "../data-classes/Staff";
 import MaintenanceJob from "../data-classes/MaintenanceJob";
+import Contract from "../data-classes/Contract";
 
 export default class DataHandler {
+  RejectCall(id: string, email: string) {
+    axios.post("api/get/reject-call", { CallID: id, Email: email});
+  }
   async GetCalls(): Promise<Call[]> {
     try {
       const response = await axios.get("/api/get/calls");
@@ -78,11 +82,15 @@ export default class DataHandler {
         return call;
       });
 
-      return calls
-        .slice()
-        .sort(
-          (a: Call, b: Call) => a.LoggedTime.getTime() - b.LoggedTime.getTime()
-        );
+      return calls.slice().sort((a: Call, b: Call) => {
+        if (a.HandledTime === null && b.HandledTime !== null) {
+          return -1;
+        } else if (a.HandledTime !== null && b.HandledTime === null) {
+          return 1;
+        } else {
+          return a.LoggedTime.getTime() - b.LoggedTime.getTime();
+        }
+      });
     } catch (error) {
       console.error("Error getting calls:", error);
       throw error;
@@ -110,11 +118,11 @@ export default class DataHandler {
           const staff =
             staffData != null
               ? new Staff(
-                  staffData.StaffName,
-                  staffData.StaffSurname,
+                  staffData.FirstName,
+                  staffData.LastName,
                   staffData.Email,
                   staffData.Password,
-                  staffData.StaffType
+                  staffData.JobTitle
                 )
               : null;
 
@@ -169,11 +177,11 @@ export default class DataHandler {
           const staff =
             staffData != null
               ? new Staff(
-                  staffData.StaffName,
-                  staffData.StaffSurname,
+                  staffData.FirstName,
+                  staffData.LastName,
                   staffData.Email,
                   staffData.Password,
-                  staffData.StaffType
+                  staffData.JobTitle
                 )
               : null;
 
@@ -190,6 +198,67 @@ export default class DataHandler {
           serviceRequest.RequestID = requestData.ID;
 
           return serviceRequest;
+        }
+      );
+
+      return serviceRequests
+        .slice()
+        .sort(
+          (a: ServiceRequest, b: ServiceRequest) =>
+            a.RequestTime.getTime() - b.RequestTime.getTime()
+        );
+    } catch (error) {
+      console.error("Error getting service requests:", error);
+      throw error;
+    }
+  }
+  async GetClientRequestsByID(
+    id: string | undefined
+  ): Promise<ServiceRequest[]> {
+    try {
+      const response = await axios.get(`/api/get/requests-by-id/client/${id}`);
+      const requestsData = response.data;
+
+      const serviceRequests: ServiceRequest[] = requestsData.map(
+        (requestData: any) => {
+          const clientData = requestData.Client;
+
+          const client = new ServiceClient(
+            requestData.ClientID,
+            clientData.FirstName,
+            clientData.LastName,
+            clientData.ClientAuthentication.Email,
+            clientData.ClientAuthentication.Password,
+            clientData.ClientType.Type
+          );
+
+          const staffData = requestData.Employee;
+          const staff =
+            staffData != null
+              ? new Staff(
+                  staffData.FirstName,
+                  staffData.LastName,
+                  staffData.Email,
+                  staffData.Password,
+                  staffData.JobTitle
+                )
+              : null;
+
+          const serviceRequest = new ServiceRequest(
+            client,
+            requestData.Priority,
+            staff,
+            new Date(requestData.RequestDate),
+            new Date(requestData.FulfillmentDate),
+            requestData.Active,
+            requestData.Sku
+          );
+
+          serviceRequest.RequestID = requestData.ID;
+
+          if (serviceRequest.Active) {
+            return serviceRequest;
+          }
         }
       );
 
@@ -270,14 +339,61 @@ export default class DataHandler {
         console.error("Error fetching data:", error);
       });
   }
+  async GetJobsByID(id: string | undefined): Promise<MaintenanceJob[]> {
+    try {
+      const response = await axios.get(`api/get/jobs-by-id/${id}`);
+      const data = response.data;
+
+      // Map the received data to MaintenanceJob objects
+      const jobs: MaintenanceJob[] = data.map((jobData: any) => {
+        // Assuming jobData contains the necessary properties
+        return new MaintenanceJob(
+          jobData.GUID,
+          new ServiceClient(
+            jobData.Client.GUID,
+            jobData.Client.FirstName,
+            jobData.Client.LastName,
+            jobData.Client.ClientAuthentication.Email,
+            jobData.Client.ClientAuthentication.Passowrd,
+            jobData.Client.ClientType.Type
+          ),
+          null,
+          jobData.Description,
+          1,
+          jobData.MaintenanceType
+        );
+      });
+      return jobs;
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      throw error;
+    }
+  }
   async GetJobs(): Promise<MaintenanceJob[]> {
-    let result: MaintenanceJob[] = [];
     try {
       const response = await axios.get("api/get/jobs");
       const data = response.data;
-
-      result = data.map();
-      return result;
+      // Map the received data to MaintenanceJob objects
+      const jobs: MaintenanceJob[] = data.map((jobData: any) => {
+        // Assuming jobData contains the necessary properties
+        return new MaintenanceJob(
+          jobData.GUID,
+          new ServiceClient(
+            jobData.Client.GUID,
+            jobData.Client.FirstName,
+            jobData.Client.LastName,
+            jobData.Client.ClientAuthentication.Email,
+            jobData.Client.ClientAuthentication.Passowrd,
+            jobData.Client.ClientType.Type
+          ),
+          null,
+          jobData.Description,
+          1,
+          jobData.MaintenanceType
+        );
+      });
+      console.log(jobs);
+      return jobs;
     } catch (error) {
       console.error("Error fetching data:", error);
       throw error;
@@ -320,7 +436,6 @@ export default class DataHandler {
       throw error;
     }
   }
-
   async CreateMaintenanceJob(call: Call, type: string) {
     await axios.post(`/api/get/create-job/${type}`, {
       call: JSON.stringify(call),
@@ -328,5 +443,33 @@ export default class DataHandler {
   }
   async MarkCallHandled(id: string) {
     await axios.post(`/api/get/call-handle/${id}`);
+  }
+  async CreateServiceRequest(call: Call) {
+    await axios.post(`/api/get/create-service-request`, {
+      call: JSON.stringify(call),
+    });
+  }
+
+  async GetClientEmails() {
+    let response = await axios.get(`/api/get/client-emails`);
+    let emails = response.data.map((data: any) => {
+      return data.Email;
+    });
+
+    return emails;
+  }
+
+  async CreateClient(
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string
+  ) {
+    axios.post(`/api/get/create-client`, {
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      password: password,
+    });
   }
 }

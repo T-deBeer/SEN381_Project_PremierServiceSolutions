@@ -76,6 +76,9 @@ export default function ServiceDeptPage() {
 
   function LoadData(ID: number) {
     let request = anRequests?.filter((x) => x.RequestID == ID)[0];
+    if (!request) {
+      request = unRequests?.filter((x) => x.RequestID == ID)[0];
+    }
     let requestClient = request?.RequestClient;
     let requestStaff = request?.Staff;
 
@@ -139,7 +142,7 @@ export default function ServiceDeptPage() {
     ) as HTMLSelectElement;
     const selectedValue = selectElement?.value;
 
-    await handler.AssignRequest(selectedRequest, selectedValue)
+    await handler.AssignRequest(selectedRequest, selectedValue);
     setChangings(true);
     setChangings(false);
   }
@@ -323,10 +326,10 @@ export default function ServiceDeptPage() {
               </tbody>
             </table>
             <CustomPagination
-              activePage={currentPage}
+              activePage={currentPageAssigned}
               itemsCountPerPage={itemsPerPage}
               totalItems={unRequests.length}
-              onPageChange={onPageChange}
+              onPageChange={onPageChangeAssigned}
             />
           </div>
           <div className="mb-1 h-75 d-flex flex-column">
