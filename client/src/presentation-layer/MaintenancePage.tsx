@@ -21,6 +21,14 @@ export default function MaintenancePage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [currentPageContract, setCurrentPageContract] = useState(1);
+  const [currentJob, setCurrentJob] = useState(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+
+  const handleUpdateJob = (e) => {
+    e.preventDefault();
+    // Update the job in your state or database here
+    setShowReviewModal(false);
+  };
 
   const itemsPerPage = 10;
 
@@ -143,6 +151,59 @@ export default function MaintenancePage() {
               totalItems={jobs.length}
               onPageChange={onPageChange}
             />
+
+            {showReviewModal && currentJob && (
+            <div
+              className="modal fade show"
+              id="reviewRequestModal"
+              role="dialog"
+              aria-labelledby="reviewRequestModalLabel"
+              aria-hidden="true"
+              style={{ display: 'block' }}
+            >
+              <div className="modal-dialog modal-dialog-centered">
+                <div className="modal-content">
+                  <div className="modal-header bg-dark">
+                    <h5
+                      className="modal-title text-white"
+                      id="reviewRequestModalLabel"
+                    >
+                      Review Request
+                    </h5>
+                    <button
+                      type="button"
+                      className="btn-close bg-dark-subtle"
+                      onClick={() => setShowReviewModal(false)}
+                      aria-label="Close"
+                    ></button>
+                  </div>
+                  <div className="modal-body">
+                    <form onSubmit={handleUpdateJob}>
+                      <label>
+                        Client Name:
+                        <input
+                          type="text"
+                          value={currentJob.Client.ClientName}
+                          onChange={e =>
+                            setCurrentJob({
+                              ...currentJob,
+                              Client: {
+                                ...currentJob.Client,
+                                ClientName: e.target.value,
+                              },
+                            })
+                          }
+                        />
+                      </label>
+                      {/* Add more inputs for other fields here */}
+                      <button type="submit">Update Job</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+            
           </div>
           <div className="d-flex flex-column">
             <h2>Contract Maintenance Request</h2>
@@ -165,8 +226,10 @@ export default function MaintenancePage() {
                     <td>
                       <button
                         className="btn btn-outline-light btn-sm"
-                        data-bs-toggle="modal"
-                        data-bs-target="#cancelJobModal"
+                        onClick={() => {
+                          setCurrentJob(job);
+                          setShowReviewModal(true);
+                        }}
                       >
                         Review Request
                       </button>
