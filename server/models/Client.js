@@ -1,7 +1,8 @@
-const { Sequelize, DataTypes } = require("sequelize");
+const { DataTypes } = require("sequelize");
 const sequelize = require("../config");
 const ClientType = require("./ClientType");
 const ClientAuthentication = require("./ClientAuthentication");
+//const Contract = require("./Contract");
 
 const Client = sequelize.define(
   "Client",
@@ -41,8 +42,6 @@ const Client = sequelize.define(
 );
 
 Client.belongsTo(ClientType, { foreignKey: "Type" });
-Client.hasOne(ClientAuthentication, {
-  foreignKey: "ClientID",
-});
+Client.hasOne(ClientAuthentication, { foreignKey: "ClientID" });
 
 module.exports = Client;

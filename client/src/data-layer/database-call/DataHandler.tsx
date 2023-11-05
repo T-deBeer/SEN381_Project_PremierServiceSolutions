@@ -357,7 +357,8 @@ export default class DataHandler {
           null,
           jobData.Description,
           1,
-          jobData.MaintenanceType
+          jobData.MaintenanceType,
+          jobData.Active
         );
       });
       return jobs;
@@ -386,10 +387,11 @@ export default class DataHandler {
           null,
           jobData.Description,
           1,
-          jobData.MaintenanceType
+          jobData.MaintenanceType,
+          jobData.Active
         );
       });
-      console.log(jobs);
+      //console.log(jobs);
       return jobs;
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -455,5 +457,9 @@ export default class DataHandler {
       email: email,
       password: password,
     });
+  }
+
+  async JobRejected(id: string | undefined, email: string | undefined) {
+    await axios.post(`/api/get/job-rejected`, { id: id, email: email });
   }
 }

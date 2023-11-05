@@ -10,7 +10,6 @@ class ServiceClient {
     Password: string;
     ClientType: string;
     ClientServiceAgreements: ServiceAgreement[];
-    ClientContracts: Contract[];
   
     constructor(
       clientId: string,
@@ -27,7 +26,6 @@ class ServiceClient {
       this.Password = password;
       this.ClientType = clientType;
       this.ClientServiceAgreements = [];
-      this.ClientContracts = [];
     }
   }
 

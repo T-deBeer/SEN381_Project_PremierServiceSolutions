@@ -36,7 +36,7 @@ export default function ClientPage() {
     );
 
     setCalls(calls);
-    setJobs(jobs);
+    setJobs(jobs.filter((x) => x.Active == 1));
     setRequests(requests);
 
     let groups: any[] = [];

@@ -3,6 +3,7 @@ const sequelize = require("../config");
 const ContractStatus = require("./ContractStatus");
 const ContractType = require("./ContractType");
 const Client = require("./Client");
+const ContractDetails = require("./ContractDetails");
 
 const Contract = sequelize.define(
   "Contract",
@@ -13,9 +14,13 @@ const Contract = sequelize.define(
     },
     ClientID: {
       type: DataTypes.CHAR(36),
+      references: {
+        model: "Client",
+        key: "GUID",
+      },
     },
     ContractBlob: {
-      type: DataTypes.BLOB,
+      type: DataTypes.STRING,
     },
     Status: {
       type: DataTypes.INTEGER,
@@ -34,5 +39,6 @@ const Contract = sequelize.define(
 Contract.belongsTo(ContractStatus, { foreignKey: "Status" });
 Contract.belongsTo(ContractType, { foreignKey: "Type" });
 Contract.belongsTo(Client, { foreignKey: "ClientID" });
+Contract.hasOne(ContractDetails, { foreignKey: "ContractID" });
 
 module.exports = Contract;

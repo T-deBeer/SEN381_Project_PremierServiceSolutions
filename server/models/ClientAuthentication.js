@@ -12,6 +12,10 @@ const ClientAuthentication = sequelize.define(
     },
     ClientID: {
       type: DataTypes.CHAR(36),
+      references: {
+        model: "Client",
+        key: "GUID",
+      },
     },
     Email: {
       type: DataTypes.STRING(100),

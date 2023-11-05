@@ -36,6 +36,9 @@ const MaintenanceJob = sequelize.define(
         key: "GUID",
       },
     },
+    Active: {
+      type: DataTypes.INTEGER,
+    },
   },
   {
     tableName: "MaintenanceJob",

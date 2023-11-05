@@ -23,11 +23,14 @@ const ServiceRequest = require("../models/ServiceRequest");
 const Sku = require("../models/SKU");
 const Calls = require("../models/Calls");
 const CallAttachment = require("../models/CallAttachment");
+const ServiceAgreement = require("../models/ServiceAgreement");
+const ContractDetails = require("../models/ContractDetails");
 
 dotenv.config();
 
 const apiKey = process.env.API_KEY;
 const apiUrl = process.env.API_URL;
+
 router.get("/data", (req, res) => {
   res.json({ message: "Hello, World!" });
 });
@@ -38,6 +41,55 @@ router.get("/clients", async (req, res) => {
     });
 
     res.json(client);
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
+router.get("/agreements", async (req, res) => {
+  try {
+    const agreements = await ServiceAgreement.findAll({
+      include: [
+        {
+          model: Contract,
+          include: [
+            { model: Client, include: [ClientAuthentication, ClientType] },
+            ContractType,
+            ContractStatus,
+            ContractDetails,
+          ],
+        },
+      ],
+    });
+
+    res.json(agreements);
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
+router.get("/agreements-by-id/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const agreements = await ServiceAgreement.findAll({
+      include: [
+        {
+          model: Contract,
+          include: [
+            {
+              model: Client,
+              include: [ClientAuthentication, ClientType],
+            },
+            ContractType,
+            ContractStatus,
+            ContractDetails,
+          ],
+          where: { ClientID: id },
+        },
+      ],
+    });
+
+    res.json(agreements);
   } catch (err) {
     console.error("Error retrieving data:", err);
     res.status(500).json({ error: "Error retrieving data" });
@@ -619,4 +671,40 @@ router.post("/reject-call", async (req, res) => {
     res.status(500).json({ error: "Error retrieving data" });
   }
 });
+router.post("/job-rejected", async (req, res) => {
+  try {
+    const { id, email } = req.body;
+    console.log(req.body);
+    await MaintenanceJob.update({ Active: 0 }, { where: { GUID: id } });
+
+    const emailData = {
+      Recipients: { To: [email] },
+
+      Content: {
+        Subject: `A job Has Been Rejected [Job ID: ${id}]`,
+        From: "tdebeer.za@gmail.com",
+        TemplateName: "jobRejected",
+      },
+    };
+
+    axios
+      .post(apiUrl, emailData, {
+        headers: {
+          "X-ElasticEmail-Apikey": apiKey,
+        },
+      })
+      .then((response) => {
+        console.log("Email sent successfully");
+      })
+      .catch((error) => {
+        console.error("Error sending email:", error);
+      });
+
+    res.status(200).send("Call Rejected Created");
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
+
 module.exports = router;

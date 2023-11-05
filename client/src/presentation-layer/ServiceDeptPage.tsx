@@ -105,7 +105,6 @@ export default function ServiceDeptPage() {
         </h6>
         <p>Email: {requestClient?.ClientEmail}</p>
         <p>Type: {requestClient?.ClientType}</p>
-        <p>Number of Contracts: {requestClient?.ClientContracts.length}</p>
       </div>
     );
 

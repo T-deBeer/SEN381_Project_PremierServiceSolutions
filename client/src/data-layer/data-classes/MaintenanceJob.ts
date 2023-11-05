@@ -11,14 +11,16 @@ class MaintenanceJob {
   Description: string;
   DifficultyRating: number;
   Type: string;
+  Active: number;
 
-  constructor(id:string, client:ServiceClient, contract: Contract | null, desc: string, rating: number, type:string) {
+  constructor(id:string, client:ServiceClient, contract: Contract | null, desc: string, rating: number, type:string, active: number) {
     this.JobID = id;
     this.Contract = contract;
     this.Client = client;
     this.Description = desc;
     this.DifficultyRating = rating;
     this.Type = type;
+    this.Active = active;
   }
 }
 
