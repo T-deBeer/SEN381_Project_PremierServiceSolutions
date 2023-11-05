@@ -4,7 +4,10 @@ import { useUser } from "../data-layer/context-classes/UserContext";
 export default function Navbar() {
   const { user, signout } = useUser();
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark p-2">
+    <nav
+      className="navbar navbar-expand-lg navbar-dark bg-dark p-2"
+      id="navigation"
+    >
       <a className="navbar-brand" href="/">
         Premier Service Solutions
       </a>

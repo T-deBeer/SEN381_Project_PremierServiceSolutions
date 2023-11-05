@@ -15,7 +15,6 @@ const io = require("socket.io")(http, {
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Enable CORS for all routes. You can customize the options as needed.
 app.use(cors());
 
 app.use("/api/get/", require("./routes/GetRoutes"));
@@ -31,12 +30,18 @@ io.on("connection", (socket) => {
     socket.join(roomID);
     console.log("A client joined room: " + roomID);
   });
+  socket.on("leave-room", (roomID) => {
+    socket.leave(roomID);
+    console.log("A client leaved room: " + roomID);
+  });
 
   socket.on("send-message", (messageData) => {
-    socket.to(messageData.room).emit("recieve-message",messageData);
+    socket.to(messageData.room).emit("recieve-message", messageData);
   });
 });
 
 http.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+module.exports = app;

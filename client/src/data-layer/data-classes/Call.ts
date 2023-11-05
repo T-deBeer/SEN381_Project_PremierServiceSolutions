@@ -5,13 +5,13 @@ import ServiceClient from './ServiceClient'
 class Call {
     CallID: string;//String will be a GUID
     CallClient: ServiceClient;
-    CallAttachments: string;
+    CallAttachments: string | null;
     LoggedTime: Date;
     HandledTime: Date | null;
     CallType: string;
     CallDescription: string | undefined;
   
-    constructor(client: ServiceClient, attachments: string, type: string) {
+    constructor(client: ServiceClient, attachments: string |null, type: string) {
       this.CallID = "";
       this.CallClient = client;
       this.CallAttachments = attachments;

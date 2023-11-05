@@ -14,11 +14,12 @@ import DataHandler from "../data-layer/database-call/DataHandler";
 import CustomPagination from "../components/CustomPagination";
 
 export default function ServiceDeptPage() {
+  const handler = new DataHandler();
   const [unRequests, setUnRequests] = useState<ServiceRequest[]>([]);
   const [anRequests, setAnRequests] = useState<ServiceRequest[]>([]);
   const [workers, setWorkers] = useState<Staff[]>();
-  var [selectedRequest, setSelectedRequest] = useState<string>();
-  var [changings, setChangings] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<string>();
+  const [changings, setChangings] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [sideBarData, setSidebarData] = useState<SidebarProps>({
     showButtons: false,
@@ -28,12 +29,10 @@ export default function ServiceDeptPage() {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [currentPageAssigned, setCurrentPageAssigned] = useState(1);
-
   const itemsPerPage = 5;
-
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+
   let currentItemsUnassigned = unRequests?.slice(
     indexOfFirstItem,
     indexOfLastItem
@@ -43,14 +42,9 @@ export default function ServiceDeptPage() {
     indexOfLastItem
   );
 
-  const onPageChange = (pageNumber: number) => {
+  async function onPageChange(pageNumber: number) {
     setCurrentPage(pageNumber);
-  };
-  const onPageChangeAssigned = (pageNumber: number) => {
-    setCurrentPageAssigned(pageNumber);
-  };
-
-  const handler = new DataHandler();
+  }
 
   async function LoadRequests() {
     let requests: ServiceRequest[] = await handler.GetServiceRequests();
@@ -61,18 +55,13 @@ export default function ServiceDeptPage() {
       indexOfLastItem
     );
     currentItemsAssigned = anRequests?.slice(indexOfFirstItem, indexOfLastItem);
+    console.log();
   }
 
   async function LoadWorkers() {
     let workers: Staff[] = await handler.GetWorkers();
     setWorkers(workers);
   }
-
-  //Get data from the database
-  useEffect(() => {
-    LoadRequests();
-    LoadWorkers();
-  }, [changings]);
 
   function LoadData(ID: number) {
     let request = anRequests?.filter((x) => x.RequestID == ID)[0];
@@ -143,8 +132,7 @@ export default function ServiceDeptPage() {
     const selectedValue = selectElement?.value;
 
     await handler.AssignRequest(selectedRequest, selectedValue);
-    setChangings(true);
-    setChangings(false);
+    setChangings(!changings);
   }
 
   async function SetActive() {
@@ -152,9 +140,16 @@ export default function ServiceDeptPage() {
       handler.MarkRequestInactive(selectedRequest);
     }
 
-    setChangings(true);
-    setChangings(false);
+    setChangings(!changings);
   }
+
+  //Get data from the database
+  useEffect(() => {
+    setLoading(true);
+    LoadRequests();
+    LoadWorkers();
+    setLoading(false);
+  }, [changings]);
   return (
     <div
       className={
@@ -288,53 +283,54 @@ export default function ServiceDeptPage() {
                 </tr>
               </thead>
               <tbody>
-                {currentItemsUnassigned
-                  ?.filter((x) => x.Staff == null)
-                  ?.map((request) => (
-                    <tr onClick={() => LoadData(request.RequestID)}>
-                      <td>
-                        {request.RequestClient.ClientName}{" "}
-                        {request.RequestClient.ClientSurname}
-                      </td>
-                      <td>{request.Priority}</td>
-                      <td>{request.SKU.Description}</td>
-                      <td>{request.RequestTime.toLocaleString()}</td>
-                      <td>
-                        <button
-                          className="btn btn-outline-light btn-sm"
-                          data-bs-toggle="modal"
-                          data-bs-target="#assignJobModal"
-                          data-request={JSON.stringify(request)}
-                          onClick={selectRequest}
-                        >
-                          Assign Job
-                        </button>
-                      </td>
-                      <td>
-                        <button
-                          className="btn btn-outline-danger btn-sm"
-                          data-bs-toggle="modal"
-                          data-bs-target="#cancelJobModal"
-                          data-request={JSON.stringify(request)}
-                          onClick={selectRequest}
-                        >
-                          Reject Job
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                {currentItemsUnassigned?.map((request) => (
+                  <tr onClick={() => LoadData(request.RequestID)}>
+                    <td>
+                      {request.RequestClient.ClientName}{" "}
+                      {request.RequestClient.ClientSurname}
+                    </td>
+                    <td>{request.Priority}</td>
+                    <td>{request.SKU.Description}</td>
+                    <td>{request.RequestTime.toLocaleString()}</td>
+                    <td>
+                      <button
+                        className="btn btn-outline-light btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#assignJobModal"
+                        data-request={JSON.stringify(request)}
+                        onClick={selectRequest}
+                      >
+                        Assign Job
+                      </button>
+                    </td>
+                    <td>
+                      <button
+                        className="btn btn-outline-danger btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#cancelJobModal"
+                        data-request={JSON.stringify(request)}
+                        onClick={selectRequest}
+                      >
+                        Reject Job
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
             <CustomPagination
-              activePage={currentPageAssigned}
+              activePage={currentPage}
               itemsCountPerPage={itemsPerPage}
               totalItems={unRequests.length}
-              onPageChange={onPageChangeAssigned}
+              onPageChange={onPageChange}
             />
           </div>
           <div className="mb-1 h-75 d-flex flex-column">
             <h2>Assigned Service Request</h2>
-            <table className="table table-responsive table-dark rounded-3 table-hover">
+            <table
+              className="table table-responsive table-dark rounded-3 table-hover"
+              id="assigned-table"
+            >
               <thead>
                 <tr>
                   <th>Client</th>
@@ -345,53 +341,51 @@ export default function ServiceDeptPage() {
                 </tr>
               </thead>
               <tbody>
-                {currentItemsAssigned
-                  ?.filter((x) => x.Staff != null)
-                  ?.map((request) => (
-                    <tr onClick={() => LoadData(request.RequestID)}>
-                      <td>
-                        {request.RequestClient.ClientName}{" "}
-                        {request.RequestClient.ClientSurname}
-                      </td>
-                      <td>
-                        {request.Staff?.StaffName} {request.Staff?.StaffSurname}
-                      </td>
-                      <td>{request.SKU.Description}</td>
-                      <td>
-                        <button
-                          className="btn btn-outline-light btn-sm"
-                          data-bs-toggle="modal"
-                          data-bs-target="#assignJobModal"
-                          data-request={JSON.stringify(request)}
-                          onClick={() =>
-                            setSelectedRequest(request.RequestID.toString())
-                          }
-                        >
-                          Re-Assign Job
-                        </button>
-                      </td>
-                      <td>
-                        <button
-                          className="btn btn-outline-danger btn-sm"
-                          data-bs-toggle="modal"
-                          data-bs-target="#cancelJobModal"
-                          data-request={JSON.stringify(request)}
-                          onClick={() =>
-                            setSelectedRequest(request.RequestID.toString())
-                          }
-                        >
-                          Cancel Job
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                {currentItemsAssigned?.map((request) => (
+                  <tr onClick={() => LoadData(request.RequestID)}>
+                    <td>
+                      {request.RequestClient.ClientName}{" "}
+                      {request.RequestClient.ClientSurname}
+                    </td>
+                    <td>
+                      {request.Staff?.StaffName} {request.Staff?.StaffSurname}
+                    </td>
+                    <td>{request.SKU.Description}</td>
+                    <td>
+                      <button
+                        className="btn btn-outline-light btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#assignJobModal"
+                        data-request={JSON.stringify(request)}
+                        onClick={() =>
+                          setSelectedRequest(request.RequestID.toString())
+                        }
+                      >
+                        Re-Assign Job
+                      </button>
+                    </td>
+                    <td>
+                      <button
+                        className="btn btn-outline-danger btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#cancelJobModal"
+                        data-request={JSON.stringify(request)}
+                        onClick={() =>
+                          setSelectedRequest(request.RequestID.toString())
+                        }
+                      >
+                        Cancel Job
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
             <CustomPagination
-              activePage={currentPageAssigned}
+              activePage={currentPage}
               itemsCountPerPage={itemsPerPage}
               totalItems={anRequests.length}
-              onPageChange={onPageChangeAssigned}
+              onPageChange={onPageChange}
             />
           </div>
         </div>

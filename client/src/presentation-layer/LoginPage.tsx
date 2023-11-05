@@ -24,7 +24,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      console.log(email, password);
+
       let user = await handler.AttemptLogin(email, password);
       login(user);
     } catch (error) {

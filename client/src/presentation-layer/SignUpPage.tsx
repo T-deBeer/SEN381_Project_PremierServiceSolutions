@@ -6,9 +6,11 @@ import WelcomeDiv from "../components/WelcomeDiv";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import DataHandler from "../data-layer/database-call/DataHandler";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
   const handler = new DataHandler();
+  const navi = useNavigate();
 
   const { user, login, signout } = useUser();
   const [firstName, setFirstName] = useState("");
@@ -46,7 +48,7 @@ export default function LoginPage() {
 
   async function HandleSignUp() {
     await handler.CreateClient(firstName, lastName, email, password);
-    
+    navi("/login");
   }
 
   function ClearForm() {

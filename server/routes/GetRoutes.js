@@ -28,7 +28,9 @@ dotenv.config();
 
 const apiKey = process.env.API_KEY;
 const apiUrl = process.env.API_URL;
-
+router.get("/data", (req, res) => {
+  res.json({ message: "Hello, World!" });
+});
 router.get("/clients", async (req, res) => {
   try {
     const client = await Client.findAll({
@@ -63,7 +65,30 @@ router.post("/create-client", async (req, res) => {
       Password: passwordHash,
     });
 
-    res.json(newClient);
+    const emailData = {
+      Recipients: { To: [email] },
+
+      Content: {
+        Subject: `Welcome to Premier Service Solutions`,
+        From: "tdebeer.za@gmail.com",
+        TemplateName: "welcomeUser",
+      },
+    };
+
+    axios
+      .post(apiUrl, emailData, {
+        headers: {
+          "X-ElasticEmail-Apikey": apiKey,
+        },
+      })
+      .then((response) => {
+        res.status(200).send("Email sent successfully");
+        console.log("Email sent successfully");
+      })
+      .catch((error) => {
+        res.status(500).send("Error sending email");
+        console.error("Error sending email:", error);
+      });
   } catch (err) {
     console.error("Error creating client:", err);
     res.status(500).json({ error: "Error creating client" });
@@ -362,15 +387,50 @@ router.post("/requests/assign", async (req, res) => {
 router.post("/call-handle/:id", async (req, res) => {
   try {
     const { id } = req.params;
+    const call = await Calls.findOne({
+      where: { GUID: id },
+      include: [{ model: Client, include: [ClientAuthentication] }],
+    });
 
-    await Calls.update({ End: new Date() }, { where: { GUID: id } });
-    res.status(200).send("Call handled");
+    await Calls.update(
+      { End: new Date() },
+      {
+        where: { GUID: id },
+        include: [{ model: Client, include: [ClientAuthentication] }],
+      }
+    );
+
+    const clientEmail = call.Client.ClientAuthentication.Email;
+
+    const emailData = {
+      Recipients: { To: [clientEmail] },
+
+      Content: {
+        Subject: `Your Call has been handled [Call ID: ${id}]`,
+        From: "tdebeer.za@gmail.com",
+        TemplateName: "callHandled",
+      },
+    };
+
+    axios
+      .post(apiUrl, emailData, {
+        headers: {
+          "X-ElasticEmail-Apikey": apiKey,
+        },
+      })
+      .then((response) => {
+        res.status(200).send("Call handled");
+        console.log("Email sent successfully");
+      })
+      .catch((error) => {
+        res.status(500).send("Call handling failed: " + error.message);
+        console.error("Error sending email:", error);
+      });
   } catch (err) {
     console.error("Error retrieving data:", err);
     res.status(500).json({ error: "Error retrieving data" });
   }
 });
-
 router.post("/requests/active", async (req, res) => {
   try {
     const id = req.body.id;
@@ -449,55 +509,18 @@ router.post("/requests/active", async (req, res) => {
     res.status(500).json({ error: "Error retrieving data" });
   }
 });
-router.post("/calls-add", upload.single("file"), async (req, res) => {
+router.post("/calls-add", async (req, res) => {
   try {
     const { id, type, description } = req.body;
-    const { buffer, originalname, mimetype } = req.file;
-    if (buffer) {
-      const pdfDoc = await PDFDocument.load(buffer);
 
-      // Create a new page
-      const [page] = pdfDoc.getPages();
-
-      // Add the description text to the new page
-      const fontSize = 12;
-      page.drawText("Description:\n" + description, {
-        x: 50,
-        y: 350,
-        size: fontSize,
-        color: rgb(0, 0, 0), // Black
-      });
-
-      const modifiedPdfBuffer = await pdfDoc.save();
-      const base64String = Buffer.from(modifiedPdfBuffer).toString("base64");
-
-      // Save the Base64 encoded PDF to the CallAttachment table
-      const callAttachment = await CallAttachment.create({
-        Attachment: base64String,
-      });
-
-      // You now have the `callAttachment.ID` for creating the new call
-      const callAttachmentID = callAttachment.ID;
-
-      // Create a new call
-      const newCall = await Calls.create({
-        GUID: uuidv4(),
-        ClientID: id,
-        Attachment: callAttachmentID,
-        Start: new Date(),
-        End: null,
-        Type: type,
-      });
-    } else {
-      const newCall = await Calls.create({
-        GUID: uuidv4(),
-        ClientID: id,
-        Attachment: null,
-        Start: new Date(),
-        End: null,
-        Type: type,
-      });
-    }
+    await Calls.create({
+      GUID: uuidv4(),
+      ClientID: id,
+      CallDescription: description,
+      Start: new Date(),
+      End: null,
+      Type: type,
+    });
 
     res.status(200).send("Call created");
   } catch (err) {

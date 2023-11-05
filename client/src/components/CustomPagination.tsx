@@ -22,10 +22,7 @@ export default function CustomPagination({
         onClick={() => onPageChange(1)}
         linkClassName="bg-dark text-white"
       />
-      <Pagination.Prev
-        onClick={() => onPageChange(activePage - 1)}
-        linkClassName="bg-dark text-white"
-      />
+      
 
       {pageNumbers.map((number) => (
         <Pagination.Item
@@ -38,10 +35,7 @@ export default function CustomPagination({
         </Pagination.Item>
       ))}
 
-      <Pagination.Next
-        onClick={() => onPageChange(activePage + 1)}
-        linkClassName="bg-dark text-white"
-      />
+
       <Pagination.Last
         onClick={() => onPageChange(pageNumbers.length)}
         linkClassName="bg-dark text-white"

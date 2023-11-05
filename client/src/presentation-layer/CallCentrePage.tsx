@@ -12,8 +12,9 @@ import ClientDetailChangeCall from "../business-layer/call-centre/ClientDetailCh
 import ContractCancelationCall from "../business-layer/call-centre/ContractCancellationCall";
 import CallBubble from "../components/CallBubble";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+import { faPaperPlane, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { socket } from "../data-layer/context-classes/Socket";
+import { Alert } from "react-bootstrap";
 
 export default function CallCentrePage() {
   const { user } = useUser();
@@ -25,18 +26,18 @@ export default function CallCentrePage() {
   const [currentMessage, setCurrentMessage] = useState<string>();
   const [messages, setMessages] = useState<string[]>([]);
   const [callDescription, setCallsDescription] = useState<string>();
+  const [isLoading, setLoading] = useState(false);
 
   async function LoadCalls() {
+    setLoading(true);
     let calls: Call[] = await handler.GetCalls();
     setCalls(calls.filter((x) => x.HandledTime == null));
+    setLoading(false);
   }
+
   async function LoadCallInfo(id: string) {
     setCurrentCall(calls?.filter((x) => x.CallID === id)[0]);
   }
-
-  useEffect(() => {
-    LoadCalls();
-  }, [handled]);
 
   async function sendMessage() {
     if (currentMessage) {
@@ -67,28 +68,12 @@ export default function CallCentrePage() {
     }
   }
 
-  useEffect(() => {
-    // Define the event handler function
-    const handleReceiveMessage = (messageData: any) => {
-      console.log(messageData);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        `${messageData.author}(${messageData.time}): ${messageData.message}`,
-      ]);
-    };
-
-    // Bind the event handler
-    socket.on("recieve-message", handleReceiveMessage);
-
-    // Clean up the event handler when the component unmounts
-    return () => {
-      socket.off("recieve-message", handleReceiveMessage);
-    };
-  }, []);
-
   function joinCall(roomID: string) {
     socket.emit("join-room", roomID);
     setMessages([]);
+  }
+  function CloseModal(roomID: string | undefined) {
+    socket.emit("leave-room", roomID);
   }
 
   function LogCall(callType: string): void {
@@ -115,10 +100,11 @@ export default function CallCentrePage() {
       currentCall.CallDescription = callDescription;
       callContext.Handle(currentCall);
 
-      setHandled(!handled);
       setCurrentCall(null);
       setCallsDescription("");
     }
+
+    setHandled(!handled);
   }
 
   function RejectCall(id: string, email: string) {
@@ -127,8 +113,41 @@ export default function CallCentrePage() {
     setCurrentCall(null);
   }
 
+  useEffect(() => {
+    // Define the event handler function
+    const handleReceiveMessage = (messageData: any) => {
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        `${messageData.author}(${messageData.time}): ${messageData.message}`,
+      ]);
+    };
+
+    // Bind the event handler
+    socket.on("recieve-message", handleReceiveMessage);
+
+    // Clean up the event handler when the component unmounts
+    return () => {
+      socket.off("recieve-message", handleReceiveMessage);
+    };
+  }, []);
+
+  useEffect(() => {
+    LoadCalls();
+  }, [handled]);
+
   return (
-    <div className="">
+    <div
+      className={
+        isLoading == true ? "vh-100 bg-dark-subtle opacity-50" : "vh-100"
+      }
+    >
+      {isLoading == true ? (
+        <div className="position-absolute top-50 start-50 z-1">
+          <FontAwesomeIcon icon={faSpinner} spin size="10x" />
+        </div>
+      ) : (
+        <></>
+      )}
       {/*Create a new call Modal*/}
       <div
         className="modal fade"
@@ -168,6 +187,7 @@ export default function CallCentrePage() {
                     placeholder="Type a description for this job..."
                     required
                     onChange={(e) => setCallsDescription(e.target.value)}
+                    value={currentCall?.CallDescription}
                   ></textarea>
                 </div>
                 <div className="d-flex flex-row justify-content-center align-items-center mt-5">
@@ -202,6 +222,7 @@ export default function CallCentrePage() {
                 className="btn-close bg-dark-subtle"
                 data-bs-dismiss="modal"
                 aria-label="Close"
+                onClick={() => CloseModal(currentCall?.CallID)}
               ></button>
             </div>
             <div className="modal-body">
@@ -327,21 +348,21 @@ export default function CallCentrePage() {
         <div className="flex-grow-1 d-flex flex-column align-items-center gap-4">
           {/* CURRENT */}
           {currentCall ? (
-            <div className="w-75 bg-dark-subtle rounded-4 p-3">
+            <div className="w-75 bg-dark-subtle rounded-4 p-3 d-flex flex-column">
               <h2>
-                Job for {currentCall.CallClient.ClientName}{" "}
+                Current Call: {currentCall.CallClient.ClientName}{" "}
                 {currentCall.CallClient.ClientSurname}
               </h2>
-              <div>
-                <p>
-                  Job Type: <b>{currentCall.CallType}</b>
+              <div className="d-flex flex-column">
+                <p className="">
+                  <b>{currentCall.LoggedTime.toLocaleString("en-us")}</b>
                 </p>
-                <a
-                  href={`data:application/pdf;base64, ${currentCall.CallAttachments}`}
-                  download="Call.pdf"
-                >
-                  Download call PDF
-                </a>
+                <p className="">
+                  <b>Job Type:</b> {currentCall.CallType}
+                </p>
+                <p className="text-wrap">
+                  <b>Description:</b> {currentCall.CallDescription}
+                </p>
               </div>
               <div className="d-flex flex-row gap-3">
                 <button

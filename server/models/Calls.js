@@ -29,7 +29,7 @@ const Call = sequelize.define(
       type: DataTypes.CHAR,
       length: 25,
     },
-    Type: {
+    CallDescription: {
       type: DataTypes.CHAR,
       length: 100,
     },

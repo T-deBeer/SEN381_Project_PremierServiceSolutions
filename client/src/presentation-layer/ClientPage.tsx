@@ -6,7 +6,7 @@ import { useUser } from "../data-layer/context-classes/UserContext";
 import Call from "../data-layer/data-classes/Call";
 import DataHandler from "../data-layer/database-call/DataHandler";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+import { faPaperPlane, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { socket } from "../data-layer/context-classes/Socket";
 import MaintenanceJob from "../data-layer/data-classes/MaintenanceJob";
 import ServiceRequest from "../data-layer/data-classes/ServiceRequest";
@@ -23,10 +23,12 @@ export default function ClientPage() {
   const [messages, setMessages] = useState<string[]>([]);
   const [changings, setChangings] = useState(false);
   const [search, setSearch] = useState<string>("");
+  const [isLoading, setLoading] = useState(false);
 
   const handler = new DataHandler();
 
   async function LoadRequired() {
+    setLoading(true);
     let calls: Call[] = await handler.GetCallsByID(user?.id);
     let jobs: MaintenanceJob[] = await handler.GetJobsByID(user?.id);
     let requests: ServiceRequest[] = await handler.GetClientRequestsByID(
@@ -43,15 +45,94 @@ export default function ClientPage() {
     }
 
     setSetCallGroups(groups);
+    setLoading(false);
   }
 
+  async function CreateNewCall(e: any) {
+    const form = document.getElementById("newCallForm") as HTMLFormElement;
+    if (form) {
+      const typeInput = document.getElementById("type") as HTMLInputElement;
+      const descriptionInput = document.getElementById(
+        "description"
+      ) as HTMLInputElement;
+      const fileInput = document.getElementById("file") as HTMLInputElement;
+
+      // Get values from the form elements
+      const id = user?.id;
+      const type = typeInput.value;
+      const description = descriptionInput.value;
+
+      try {
+        await handler.CreateCall(id, type, description);
+        setChangings(!changings);
+      } catch (error) {
+        console.error("Error creating a new call:", error);
+      }
+      setChangings(!changings);
+    }
+  }
+
+  async function sendMessage() {
+    if (currentMessage) {
+      let messageData = {
+        room: currentCall?.CallID,
+        author: user?.username,
+        message: currentMessage,
+        time: new Date(Date.now()).toLocaleTimeString("en-US", {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+          hour12: false,
+        }),
+      };
+      const messageInput = document.getElementById(
+        "message"
+      ) as HTMLInputElement;
+      messageInput.value = "";
+      setCurrentMessage("");
+
+      // Add the user's own message to the chat
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        `Me(${messageData.time}): ${messageData.message}`,
+      ]);
+      socket.emit("send-message", messageData);
+    }
+  }
+  function joinCall(roomID: string) {
+    socket.emit("join-room", roomID);
+    setMessages([]);
+  }
+  function CloseModal(roomID: string | undefined) {
+    socket.emit("leave-room", roomID);
+  }
+
+  useEffect(() => {
+    const handleReceiveMessage = (messageData: any) => {
+      console.log(messageData);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        `${messageData.author}(${messageData.time}): ${messageData.message}`,
+      ]);
+    };
+
+    // Bind the event handler
+    socket.on("recieve-message", handleReceiveMessage);
+
+    // Clean up the event handler when the component unmounts
+    return () => {
+      socket.off("recieve-message", handleReceiveMessage);
+    };
+  }, []);
   useEffect(() => {
     LoadRequired();
   }, [user, changings]);
 
   useEffect(() => {
+    setLoading(true);
     const query: string | undefined = search?.toLowerCase();
-
+    //console.log(query);
     if (query != "") {
       const filteredCalls = calls?.filter((call) => {
         const dateMatch =
@@ -85,85 +166,22 @@ export default function ClientPage() {
         setSetCallGroups(groups);
       }
     }
+    setLoading(false);
   }, [search]);
 
-  async function CreateNewCall(e: any) {
-    e.preventDefault();
-    const form = document.getElementById("newCallForm") as HTMLFormElement;
-    if (form) {
-      const typeInput = document.getElementById("type") as HTMLInputElement;
-      const descriptionInput = document.getElementById(
-        "description"
-      ) as HTMLInputElement;
-      const fileInput = document.getElementById("file") as HTMLInputElement;
-
-      // Get values from the form elements
-      const id = user?.id;
-      const type = typeInput.value;
-      const description = descriptionInput.value;
-      const file = fileInput.files || null;
-      try {
-        const result = await handler.CreateCall(id, type, description, file);
-        setChangings(!changings);
-      } catch (error) {
-        console.error("Error creating a new call:", error);
-      }
-    }
-  }
-
-  async function sendMessage() {
-    if (currentMessage) {
-      let messageData = {
-        room: currentCall?.CallID,
-        author: user?.username,
-        message: currentMessage,
-        time: new Date(Date.now()).toLocaleTimeString("en-US", {
-          month: "short",
-          day: "numeric",
-          hour: "numeric",
-          minute: "numeric",
-          hour12: false,
-        }),
-      };
-      const messageInput = document.getElementById(
-        "message"
-      ) as HTMLInputElement;
-      messageInput.value = "";
-      setCurrentMessage("");
-
-      // Add the user's own message to the chat
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        `Me(${messageData.time}): ${messageData.message}`,
-      ]);
-      socket.emit("send-message", messageData);
-    }
-  }
-
-  useEffect(() => {
-    const handleReceiveMessage = (messageData: any) => {
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        `${messageData.author}(${messageData.time}): ${messageData.message}`,
-      ]);
-    };
-
-    // Bind the event handler
-    socket.on("recieve-message", handleReceiveMessage);
-
-    // Clean up the event handler when the component unmounts
-    return () => {
-      socket.off("recieve-message", handleReceiveMessage);
-    };
-  }, []);
-
-  function joinCall(roomID: string) {
-    socket.emit("join-room", roomID);
-    setMessages([]);
-  }
-
   return (
-    <div>
+    <div
+      className={
+        isLoading == true ? "vh-100 bg-dark-subtle opacity-50" : "vh-100"
+      }
+    >
+      {isLoading == true ? (
+        <div className="position-absolute top-50 start-50 ">
+          <FontAwesomeIcon icon={faSpinner} spin size="10x" />
+        </div>
+      ) : (
+        <></>
+      )}
       {/*Create a new call Modal*/}
       <div
         className="modal fade"
@@ -215,20 +233,6 @@ export default function ClientPage() {
                     required
                   ></textarea>
                 </div>
-
-                <div className="mb-3">
-                  <label htmlFor="file" className="form-label">
-                    Upload additional information(optional):
-                  </label>
-                  <input
-                    className="form-control"
-                    type="file"
-                    id="file"
-                    name="file"
-                    accept=".pdf"
-                    multiple={false}
-                  />
-                </div>
                 <div className="d-flex flex-row justify-content-center align-items-center mt-5">
                   <button type="submit" className="btn btn-dark w-50">
                     Create Call
@@ -260,6 +264,7 @@ export default function ClientPage() {
                 className="btn-close bg-dark-subtle"
                 data-bs-dismiss="modal"
                 aria-label="Close"
+                onClick={() => CloseModal(currentCall?.CallID)}
               ></button>
             </div>
             <div className="modal-body">
@@ -307,7 +312,7 @@ export default function ClientPage() {
 
       <Navbar />
 
-      <div className="welcome-div d-flex flex-column justify-content-center align-items-center gap-3  p-2">
+      <div className="welcome-div d-flex flex-column h-25 justify-content-center align-items-center gap-3  p-2">
         <h3 className="text-white">Welcome, {user?.username}</h3>
         <div className="form-floating w-25 ">
           <input

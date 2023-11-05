@@ -8,7 +8,7 @@ import Contract from "../data-classes/Contract";
 
 export default class DataHandler {
   RejectCall(id: string, email: string) {
-    axios.post("api/get/reject-call", { CallID: id, Email: email});
+    axios.post("api/get/reject-call", { CallID: id, Email: email });
   }
   async GetCalls(): Promise<Call[]> {
     try {
@@ -25,12 +25,9 @@ export default class DataHandler {
           callData.Client.ClientType.Type
         );
 
-        const call = new Call(
-          client,
-          callData.CallAttachment.Attachment,
-          callData.Type
-        );
+        const call = new Call(client, null, callData.Type);
         call.CallID = callData.GUID;
+        call.CallDescription = callData.CallDescription;
         call.LoggedTime = new Date(callData.Start);
         if (callData.End) {
           call.HandledTime = new Date(callData.End);
@@ -399,12 +396,7 @@ export default class DataHandler {
       throw error;
     }
   }
-  async CreateCall(
-    id: string | undefined,
-    type: string,
-    description: string,
-    file: FileList | null
-  ) {
+  async CreateCall(id: string | undefined, type: string, description: string) {
     if (!id) {
       id = "";
     }
@@ -415,12 +407,6 @@ export default class DataHandler {
       formData.append("type", type);
       formData.append("description", description);
 
-      if (file) {
-        formData.append("file", file[0]);
-      }
-      for (const [key, value] of formData.entries()) {
-        console.log(key, value);
-      }
       const response = await fetch("/api/get/calls-add", {
         method: "POST",
         body: formData,
@@ -449,7 +435,6 @@ export default class DataHandler {
       call: JSON.stringify(call),
     });
   }
-
   async GetClientEmails() {
     let response = await axios.get(`/api/get/client-emails`);
     let emails = response.data.map((data: any) => {
@@ -458,7 +443,6 @@ export default class DataHandler {
 
     return emails;
   }
-
   async CreateClient(
     firstName: string,
     lastName: string,
