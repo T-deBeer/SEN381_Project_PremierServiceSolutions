@@ -613,9 +613,12 @@ router.post("/requests-complete", async (req, res) => {
 router.post("/calls-add", async (req, res) => {
   try {
     const { id, type, description } = req.body;
+    const newGUID = uuidv4();
+
+    console.log(req.body);
 
     await Calls.create({
-      GUID: uuidv4(),
+      GUID: newGUID,
       ClientID: id,
       CallDescription: description,
       Start: new Date(),

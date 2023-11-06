@@ -220,11 +220,7 @@ export default class DataHandler {
           callData.Client.ClientType.Type
         );
 
-        const call = new Call(
-          client,
-          callData.CallAttachment.Attachment,
-          callData.Type
-        );
+        const call = new Call(client, null, callData.Type);
         call.CallID = callData.GUID;
         call.LoggedTime = new Date(callData.Start);
         if (callData.End) {
@@ -589,18 +585,13 @@ export default class DataHandler {
       id = "";
     }
     try {
-      const formData = new FormData();
-
-      formData.append("id", id);
-      formData.append("type", type);
-      formData.append("description", description);
-
-      const response = await fetch("/api/get/calls-add", {
-        method: "POST",
-        body: formData,
+      const response = await axios.post("/api/get/calls-add", {
+        id,
+        type,
+        description,
       });
 
-      if (response.ok) {
+      if (response.status == 200) {
         console.log("Call created successfully");
       } else {
         console.error("Error creating a new call");

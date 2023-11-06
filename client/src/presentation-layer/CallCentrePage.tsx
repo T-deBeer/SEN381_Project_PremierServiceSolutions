@@ -15,7 +15,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { socket } from "../data-layer/context-classes/Socket";
 
-
 export default function CallCentrePage() {
   const { user } = useUser();
   const [calls, setCalls] = useState<Call[]>();
@@ -345,7 +344,7 @@ export default function CallCentrePage() {
           </div>
         </div>
         {/* Main Seciton */}
-        <div className="flex-grow-1 d-flex flex-column align-items-center gap-4">
+        <div className="flex-grow-1 d-flex flex-column align-items-center justify-content-center gap-4">
           {/* CURRENT */}
           {currentCall ? (
             <div className="w-75 bg-dark-subtle rounded-4 p-3 d-flex flex-column">

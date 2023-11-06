@@ -39,7 +39,6 @@ export default function ClientPage() {
     setJobs(jobs.filter((x) => x.Active == 1));
     setRequests(requests);
 
-
     let groups: any[] = [];
     for (let i = 0; i < calls.length; i += 3) {
       groups.push(calls.slice(i, i + 3));
@@ -50,13 +49,15 @@ export default function ClientPage() {
   }
 
   async function CreateNewCall(e: any) {
+    e.preventDefault();
+
+    setLoading(true);
     const form = document.getElementById("newCallForm") as HTMLFormElement;
     if (form) {
       const typeInput = document.getElementById("type") as HTMLInputElement;
       const descriptionInput = document.getElementById(
         "description"
       ) as HTMLInputElement;
-      const fileInput = document.getElementById("file") as HTMLInputElement;
 
       // Get values from the form elements
       const id = user?.id;
@@ -70,6 +71,8 @@ export default function ClientPage() {
         console.error("Error creating a new call:", error);
       }
       setChangings(!changings);
+      setLoading(false);
+      window.location.reload();
     }
   }
 
@@ -128,7 +131,7 @@ export default function ClientPage() {
   }, []);
   useEffect(() => {
     LoadRequired();
-  }, [changings]);
+  }, [user, changings]);
 
   useEffect(() => {
     setLoading(true);
