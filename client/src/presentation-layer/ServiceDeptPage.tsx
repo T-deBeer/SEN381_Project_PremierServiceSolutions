@@ -149,6 +149,7 @@ export default function ServiceDeptPage() {
     LoadWorkers();
     setLoading(false);
   }, [changings]);
+  
   return (
     <div
       className={

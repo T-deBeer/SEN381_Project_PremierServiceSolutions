@@ -71,6 +71,7 @@ router.get("/agreements", async (req, res) => {
 router.get("/agreements-by-id/:id", async (req, res) => {
   try {
     const { id } = req.params;
+
     const agreements = await ServiceAgreement.findAll({
       include: [
         {
@@ -213,7 +214,12 @@ router.get("/jobs-by-id/:id", async (req, res) => {
 router.get("/contracts", async (req, res) => {
   try {
     const jobs = await Contract.findAll({
-      include: [ContractType, ContractStatus, Client],
+      include: [
+        ContractType,
+        ContractStatus,
+        { model: Client, include: [ClientAuthentication, ClientType] },
+        ContractDetails,
+      ],
     });
 
     res.json(jobs);
@@ -601,6 +607,29 @@ router.post("/create-job/:type", async (req, res) => {
       { where: { GUID: callInfo.CallID } }
     );
 
+    const emailData = {
+      Recipients: { To: [callInfo.CallClient.ClientEmail] },
+
+      Content: {
+        Subject: `A Call Has Been Handled [Call ID: ${callInfo.CallID}]`,
+        From: "tdebeer.za@gmail.com",
+        TemplateName: "callHandled",
+      },
+    };
+
+    axios
+      .post(apiUrl, emailData, {
+        headers: {
+          "X-ElasticEmail-Apikey": apiKey,
+        },
+      })
+      .then((response) => {
+        console.log("Email sent successfully");
+      })
+      .catch((error) => {
+        console.error("Error sending email:", error);
+      });
+
     res.status(200).send("Maintenance Job Created");
   } catch (err) {
     console.error("Error retrieving data:", err);
@@ -616,7 +645,7 @@ router.post("/create-service-request", async (req, res) => {
       callInfo.CallClient.ClientType == "Single Person"
         ? "SO-RESIDENTIAL-2023"
         : "SO-COMMERCIAL-2023";
-    console.log(SKU_Reference);
+
     await ServiceRequest.create({
       ClientID: callInfo.CallClient.ClientID,
       Priority: 1,
@@ -625,10 +654,34 @@ router.post("/create-service-request", async (req, res) => {
       Active: 1,
       Sku: SKU_Reference,
     });
+
     await Calls.update(
       { End: new Date() },
       { where: { GUID: callInfo.CallID } }
     );
+
+    const emailData = {
+      Recipients: { To: [callInfo.CallClient.ClientEmail] },
+
+      Content: {
+        Subject: `A Call Has Been Handled [Call ID: ${callInfo.CallID}]`,
+        From: "tdebeer.za@gmail.com",
+        TemplateName: "callHandled",
+      },
+    };
+
+    axios
+      .post(apiUrl, emailData, {
+        headers: {
+          "X-ElasticEmail-Apikey": apiKey,
+        },
+      })
+      .then((response) => {
+        console.log("Email sent successfully");
+      })
+      .catch((error) => {
+        console.error("Error sending email:", error);
+      });
 
     res.status(200).send("Service Request Created");
   } catch (err) {
@@ -701,6 +754,130 @@ router.post("/job-rejected", async (req, res) => {
       });
 
     res.status(200).send("Call Rejected Created");
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
+router.post("/update-client", async (req, res) => {
+  try {
+    const { JobID, ClientID, Name, Surname, Email, Type } = req.body;
+
+    await Client.update(
+      { FirstName: Name, LastName: Surname, Type: Type },
+      { where: { GUID: ClientID } }
+    );
+    await ClientAuthentication.update(
+      { Email: Email },
+      { where: { ClientID: ClientID } }
+    );
+    await MaintenanceJob.update({ Active: 0 }, { where: { GUID: JobID } });
+
+    const emailData = {
+      Recipients: { To: [Email] },
+
+      Content: {
+        Subject: `A Job Has Been Completed [Job ID ${JobID}]`,
+        From: "tdebeer.za@gmail.com",
+        TemplateName: "maintenanceCompleted",
+      },
+    };
+
+    axios
+      .post(apiUrl, emailData, {
+        headers: {
+          "X-ElasticEmail-Apikey": apiKey,
+        },
+      })
+      .then((response) => {
+        console.log("Email sent successfully");
+      })
+      .catch((error) => {
+        console.error("Error sending email:", error);
+      });
+
+    res.status(200).send("Client updated");
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
+router.post("/create-agreement", async (req, res) => {
+  try {
+    const { JobID, Email, SLABlob, ContractID } = req.body;
+    const newGUID = uuidv4();
+
+    await ServiceAgreement.create({
+      GUID: newGUID,
+      SLABlob: SLABlob,
+      ContractID: ContractID,
+    });
+    await MaintenanceJob.update({ Active: 0 }, { where: { GUID: JobID } });
+    const emailData = {
+      Recipients: { To: [Email] },
+
+      Content: {
+        Subject: `A Job Has Been Completed [Job ID ${JobID}]`,
+        From: "tdebeer.za@gmail.com",
+        TemplateName: "maintenanceCompleted",
+      },
+    };
+
+    axios
+      .post(apiUrl, emailData, {
+        headers: {
+          "X-ElasticEmail-Apikey": apiKey,
+        },
+      })
+      .then((response) => {
+        console.log("Email sent successfully");
+      })
+      .catch((error) => {
+        console.error("Error sending email:", error);
+      });
+
+    res.status(200).send("Agreement created");
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
+router.post("/update-agreement", async (req, res) => {
+  try {
+    const { JobID, Email, SLABlob, ContractID, RequestID } = req.body;
+    console.log(req.body);
+    await ServiceAgreement.update(
+      {
+        SLABlob: SLABlob,
+        ContractID: ContractID,
+      },
+      { where: { GUID: RequestID } }
+    );
+    await MaintenanceJob.update({ Active: 0 }, { where: { GUID: JobID } });
+    const emailData = {
+      Recipients: { To: [Email] },
+
+      Content: {
+        Subject: `A Job Has Been Completed [Job ID ${JobID}]`,
+        From: "tdebeer.za@gmail.com",
+        TemplateName: "maintenanceCompleted",
+      },
+    };
+
+    axios
+      .post(apiUrl, emailData, {
+        headers: {
+          "X-ElasticEmail-Apikey": apiKey,
+        },
+      })
+      .then((response) => {
+        console.log("Email sent successfully");
+      })
+      .catch((error) => {
+        console.error("Error sending email:", error);
+      });
+
+    res.status(200).send("Agreement updated");
   } catch (err) {
     console.error("Error retrieving data:", err);
     res.status(500).json({ error: "Error retrieving data" });

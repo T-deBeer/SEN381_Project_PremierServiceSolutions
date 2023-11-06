@@ -5,10 +5,106 @@ import ServiceRequest from "../data-classes/ServiceRequest";
 import Staff from "../data-classes/Staff";
 import MaintenanceJob from "../data-classes/MaintenanceJob";
 import Contract from "../data-classes/Contract";
+import ServiceAgreement from "../data-classes/ServiceAgreement";
 
 export default class DataHandler {
-  RejectCall(id: string, email: string) {
-    axios.post("api/get/reject-call", { CallID: id, Email: email });
+  async UpdateAgreement(
+    JobID: string | undefined,
+    ClientEmail: string | undefined,
+    descriptionEdit: string,
+    selectedContractEdit: string,
+    selectedAgreement: string
+  ) {
+    try {
+      await axios.post("/api/get/update-agreement", {
+        JobID: JobID,
+        Email: ClientEmail,
+        SLABlob: descriptionEdit,
+        ContractID: selectedContractEdit,
+        RequestID: selectedAgreement,
+      });
+    } catch (error) {
+      console.error("Error getting service requests:", error);
+      throw error;
+    }
+  }
+  async CreateAgreement(
+    JobID: string | undefined,
+    Email: string | undefined,
+    description: string,
+    selectedContract: string
+  ) {
+    try {
+      await axios.post("/api/get/create-agreement", {
+        JobID: JobID,
+        Email: Email,
+        SLABlob: description,
+        ContractID: selectedContract,
+      });
+    } catch (error) {
+      console.error("Error getting service requests:", error);
+      throw error;
+    }
+  }
+  async UpdateClient(
+    JobID: string | undefined,
+    ClientID: string | undefined,
+    Name: string | undefined,
+    Surname: string | undefined,
+    Email: string | undefined,
+    Type: number | undefined
+  ) {
+    await axios.post("/api/get/update-client", {
+      JobID: JobID,
+      ClientID: ClientID,
+      Name: Name,
+      Email: Email,
+      Type: Type,
+      Surname: Surname,
+    });
+  }
+  async GetAgreementsByID(ClientID: string): Promise<ServiceAgreement[]> {
+    try {
+      const response = await axios.get(
+        `/api/get/agreements-by-id//${ClientID}`
+      );
+      const agreementData = response.data;
+
+      const agreements: ServiceAgreement[] = agreementData.map((data: any) => {
+        const linkedClient = new ServiceClient(
+          data.Contract.Client.GUID,
+          data.Contract.Client.FirstName,
+          data.Contract.Client.LastName,
+          data.Contract.Client.ClientAuthentication.Email,
+          data.Contract.Client.ClientAuthentication.PAssword,
+          data.Contract.Client.ClientType.Type
+        );
+
+        const contract = new Contract(
+          linkedClient,
+          data.Contract.ContractStatus.Status,
+          new Date(data.Contract.ContractDetail.CommenceDate),
+          new Date(data.Contract.ContractDetail.ExpiryDate),
+          data.Contract.ContractType.Type
+        );
+        contract.ContractID = data.Contract.GUID;
+
+        return new ServiceAgreement(
+          data.GUID,
+          contract,
+          new Date(data.Contract.ContractDetail.CommenceDate),
+          new Date(data.Contract.ContractDetail.ExpiryDate)
+        );
+      });
+
+      return agreements;
+    } catch (error) {
+      console.error("Error getting service requests:", error);
+      throw error;
+    }
+  }
+  async RejectCall(id: string, email: string) {
+    await axios.post("api/get/reject-call", { CallID: id, Email: email });
   }
   async GetCalls(): Promise<Call[]> {
     try {
@@ -398,6 +494,36 @@ export default class DataHandler {
       throw error;
     }
   }
+  async GetContracts(): Promise<Contract[]> {
+    try {
+      const response = await axios.get("api/get/contracts");
+      const data = response.data;
+
+      const contracts: Contract[] = data.map((data: any) => {
+        let contract = new Contract(
+          new ServiceClient(
+            data.Client.GUID,
+            data.Client.FirstName,
+            data.Client.LastName,
+            data.Client.ClientAuthentication.Email,
+            data.Client.ClientAuthentication.Passowrd,
+            data.Client.ClientType.Type
+          ),
+          data.ContractStatus.Status,
+          data.ContractDetail.SignDate,
+          data.ContractDetail.ExpiryDate,
+          data.ContractType.Type
+        );
+        contract.ContractID = data.GUID;
+        return contract;
+      });
+
+      return contracts;
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      throw error;
+    }
+  }
   async CreateCall(id: string | undefined, type: string, description: string) {
     if (!id) {
       id = "";
@@ -458,7 +584,6 @@ export default class DataHandler {
       password: password,
     });
   }
-
   async JobRejected(id: string | undefined, email: string | undefined) {
     await axios.post(`/api/get/job-rejected`, { id: id, email: email });
   }
