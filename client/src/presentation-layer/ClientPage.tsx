@@ -39,6 +39,7 @@ export default function ClientPage() {
     setJobs(jobs.filter((x) => x.Active == 1));
     setRequests(requests);
 
+
     let groups: any[] = [];
     for (let i = 0; i < calls.length; i += 3) {
       groups.push(calls.slice(i, i + 3));
@@ -127,7 +128,7 @@ export default function ClientPage() {
   }, []);
   useEffect(() => {
     LoadRequired();
-  }, [user, changings]);
+  }, [changings]);
 
   useEffect(() => {
     setLoading(true);
@@ -168,6 +169,10 @@ export default function ClientPage() {
     }
     setLoading(false);
   }, [search]);
+
+  useEffect(() => {
+    console.log(requests);
+  }, [requests]);
 
   return (
     <div

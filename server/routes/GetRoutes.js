@@ -567,6 +567,49 @@ router.post("/requests/active", async (req, res) => {
     res.status(500).json({ error: "Error retrieving data" });
   }
 });
+router.post("/requests-complete", async (req, res) => {
+  try {
+    const { RequestID, Email } = req.body;
+    console.log(req.body);
+
+    await ServiceRequest.update(
+      { Active: 0 },
+      {
+        where: {
+          ID: RequestID,
+        },
+      }
+    );
+
+    const clientEmailData = {
+      Recipients: { To: [Email] },
+
+      Content: {
+        Subject: `A Service Request has been Completed [REQUEST ID: ${RequestID}]`,
+        From: "tdebeer.za@gmail.com",
+        TemplateName: "requestCompleted",
+      },
+    };
+
+    axios
+      .post(apiUrl, clientEmailData, {
+        headers: {
+          "X-ElasticEmail-Apikey": apiKey,
+        },
+      })
+      .then((response) => {
+        console.log("Email sent successfully to client");
+      })
+      .catch((error) => {
+        console.error("Error sending email to client:", error);
+      });
+
+    res.status(200).send("Job completed");
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
 router.post("/calls-add", async (req, res) => {
   try {
     const { id, type, description } = req.body;
@@ -852,6 +895,108 @@ router.post("/update-agreement", async (req, res) => {
         ContractID: ContractID,
       },
       { where: { GUID: RequestID } }
+    );
+    await MaintenanceJob.update({ Active: 0 }, { where: { GUID: JobID } });
+    const emailData = {
+      Recipients: { To: [Email] },
+
+      Content: {
+        Subject: `A Job Has Been Completed [Job ID ${JobID}]`,
+        From: "tdebeer.za@gmail.com",
+        TemplateName: "maintenanceCompleted",
+      },
+    };
+
+    axios
+      .post(apiUrl, emailData, {
+        headers: {
+          "X-ElasticEmail-Apikey": apiKey,
+        },
+      })
+      .then((response) => {
+        console.log("Email sent successfully");
+      })
+      .catch((error) => {
+        console.error("Error sending email:", error);
+      });
+
+    res.status(200).send("Agreement updated");
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
+router.post("/create-contract", async (req, res) => {
+  try {
+    const {
+      JobID,
+      ClientID,
+      ContractBlob,
+      Type,
+      Status,
+      SignDate,
+      ExpiryDate,
+      Email,
+    } = req.body;
+    const newContractGUID = uuidv4();
+    const newDetailsGUID = uuidv4();
+
+    await Contract.create({
+      GUID: newContractGUID,
+      ClientID: ClientID,
+      ContractBlob: ContractBlob,
+      Status: Status,
+      Type: Type,
+    });
+    await ContractDetails.create({
+      GUID: newDetailsGUID,
+      CommenceDate: SignDate,
+      SignDate: SignDate,
+      ExpiryDate: ExpiryDate,
+      ContractID: newContractGUID,
+    });
+    await MaintenanceJob.update({ Active: 0 }, { where: { GUID: JobID } });
+    const emailData = {
+      Recipients: { To: [Email] },
+
+      Content: {
+        Subject: `A Job Has Been Completed [Job ID ${JobID}]`,
+        From: "tdebeer.za@gmail.com",
+        TemplateName: "maintenanceCompleted",
+      },
+    };
+
+    axios
+      .post(apiUrl, emailData, {
+        headers: {
+          "X-ElasticEmail-Apikey": apiKey,
+        },
+      })
+      .then((response) => {
+        console.log("Email sent successfully");
+      })
+      .catch((error) => {
+        console.error("Error sending email:", error);
+      });
+
+    res.status(200).send("Agreement updated");
+  } catch (err) {
+    console.error("Error retrieving data:", err);
+    res.status(500).json({ error: "Error retrieving data" });
+  }
+});
+router.post("/update-contract", async (req, res) => {
+  try {
+    const { ContractID, ClientID, ContractBlob, Type, Status, Email } =
+      req.body;
+
+    await Contract.update(
+      {
+        ContractBlob: ContractBlob,
+        Status: Status,
+        Type: Type,
+      },
+      { where: { GUID: ContractID } }
     );
     await MaintenanceJob.update({ Active: 0 }, { where: { GUID: JobID } });
     const emailData = {

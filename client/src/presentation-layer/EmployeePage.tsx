@@ -4,18 +4,18 @@ import Navbar from "../components/Navbar";
 import Sidebar, { SidebarProps } from "../components/Sidebar";
 import { useUser } from "../data-layer/context-classes/UserContext";
 import ServiceRequest from "../data-layer/data-classes/ServiceRequest";
-import ServiceClient from "../data-layer/data-classes/ServiceClient";
-import Staff from "../data-layer/data-classes/Staff";
-import axios from "axios";
 import DataHandler from "../data-layer/database-call/DataHandler";
 import CustomPagination from "../components/CustomPagination";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 
 export default function EmployeePage() {
   const { user } = useUser();
-  const userID = user?.id;
+  const [userID, setUserID] = useState<string>();
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<ServiceRequest>();
-  var [changings, setChangings] = useState(false);
+  const [changings, setChangings] = useState(false);
+  const [isLoading, setLoading] = useState(false);
   const handler = new DataHandler();
 
   const [sideBarData, setSidebarData] = useState<SidebarProps>({
@@ -29,22 +29,41 @@ export default function EmployeePage() {
   const itemsPerPage = 10;
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  let currentItems = requests?.slice(indexOfFirstItem, indexOfLastItem);
+  let currentItems = requests
+    .filter((x) => x.Active == 1)
+    ?.slice(indexOfFirstItem, indexOfLastItem);
 
   const onPageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
   };
 
-  async function LoadRequests() {
-    let requests: ServiceRequest[] = await handler.GetServiceRequestsByID(
-      userID
-    );
-    setRequests(requests);
-    currentItems = requests?.slice(indexOfFirstItem, indexOfLastItem);
+  async function CompleteRequest(e: any) {
+    e.preventDefault();
+    setLoading(true);
+    if (selectedRequest) {
+      await handler.CompleteServiceRequest(
+        selectedRequest.RequestID,
+        selectedRequest.RequestClient.ClientEmail
+      );
+
+      setChangings(!changings);
+      setLoading(false);
+      window.location.reload();
+    }
   }
-  useEffect(() => {
-    LoadRequests();
-  }, [changings]);
+
+  async function LoadRequests() {
+    setLoading(true);
+    let requests: ServiceRequest[] = await handler.GetServiceRequestsByID(
+      user?.id
+    );
+    setRequests(requests.filter((x) => x.Active == 1));
+    currentItems = requests
+      .filter((x) => x.Active == 1)
+      ?.slice(indexOfFirstItem, indexOfLastItem);
+
+    setLoading(false);
+  }
 
   function LoadData(ID: number) {
     let request = requests?.filter((x) => x.RequestID == ID)[0];
@@ -100,9 +119,73 @@ export default function EmployeePage() {
 
     setSidebarData(data);
   }
+  useEffect(() => {
+    LoadRequests();
+  }, [user, changings]);
 
   return (
-    <div className="vh-100">
+    <div
+      className={
+        isLoading == true ? "vh-100 bg-dark-subtle opacity-50" : "vh-100"
+      }
+    >
+      {isLoading == true ? (
+        <div className="position-absolute top-50 start-50 ">
+          <FontAwesomeIcon icon={faSpinner} spin size="10x" />
+        </div>
+      ) : (
+        <></>
+      )}
+      {/*Complete Job Modal*/}
+      <div
+        className="modal fade"
+        id="completeJobModal"
+        role="dialog"
+        aria-labelledby="completeJobModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header bg-dark">
+              <h5 className="modal-title text-white" id="completeJobModalLabel">
+                Cancel Job
+              </h5>
+              <button
+                type="button"
+                className="btn-close bg-dark-subtle"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div className="modal-body">
+              <form id="completeJobForm" onSubmit={(e) => CompleteRequest(e)}>
+                <div className="form-group mb-3">
+                  <label htmlFor="worker">
+                    Are you sure you want to complete this request?
+                  </label>
+                </div>
+                <div className="d-flex flex-row gap-3 justify-content-center">
+                  <button
+                    type="submit"
+                    className="btn btn-outline-success w-25"
+                  >
+                    Yes
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-dark w-25"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                  >
+                    No
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/*Complete Job Modal ENDS*/}
       <Navbar />
       <div className="d-flex flex-row gap-3 p-2 h-75">
         <Sidebar {...sideBarData} />
@@ -121,7 +204,10 @@ export default function EmployeePage() {
               </thead>
               <tbody>
                 {currentItems?.map((request) => (
-                  <tr onClick={() => LoadData(request.RequestID)}>
+                  <tr
+                    key={request.RequestID}
+                    onClick={() => LoadData(request.RequestID)}
+                  >
                     <td>{request.Active}</td>
                     <td>
                       {request.RequestClient.ClientName}{" "}

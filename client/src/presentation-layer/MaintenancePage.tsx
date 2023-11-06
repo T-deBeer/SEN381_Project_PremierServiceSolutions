@@ -38,8 +38,22 @@ export default function MaintenancePage() {
   const [selectedAgreement, setSelectedAgreement] = useState("");
   const [description, setDescription] = useState("");
   const [descriptionEdit, setDescriptionEdit] = useState("");
-
-  const itemsPerPage = 10;
+  const [createContractDescription, setCreateContractDescription] =
+    useState("");
+  const [contractType, setContractType] = useState("");
+  const [signDate, setSignDate] = useState(
+    new Date().toLocaleDateString("en-US")
+  );
+  const [expiryDate, setExpiryDate] = useState(
+    new Date().toLocaleDateString("en-US")
+  );
+  const [dateHasError, setDateHasError] = useState(false);
+  const [createContractStatus, setCreateContractStatus] = useState("");
+  const [editSelectedContract, setEditSelectedContract] = useState("");
+  const [editContractStatus, setEditContractStatus] = useState("");
+  const [editContractType, setEditContractType] = useState("");
+  const [editContractDescription, setEditContractDescription] = useState("");
+  const itemsPerPage = 5;
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -162,8 +176,8 @@ export default function MaintenancePage() {
   }
 
   //UPDATE A SERVICE AGREEMENT
-  async function HandleUpdateServiceAgreement() {
-    setLoading(true);
+  async function HandleUpdateServiceAgreement(e: any) {
+    e.preventDefault();
     await handler.UpdateAgreement(
       currentJob?.JobID,
       currentJob?.Client.ClientEmail,
@@ -173,12 +187,13 @@ export default function MaintenancePage() {
     );
     setcurrentJob(null);
     setChangings(!changings);
-    setLoading(false);
+
+    window.location.reload();
   }
 
   //CREATE A SERVICE AGREEMENT
-  async function HandleCreateServiceAgreement() {
-    setLoading(true);
+  async function HandleCreateServiceAgreement(e: any) {
+    e.preventDefault();
     await handler.CreateAgreement(
       currentJob?.JobID,
       currentJob?.Client.ClientEmail,
@@ -187,9 +202,125 @@ export default function MaintenancePage() {
     );
     setChangings(!changings);
     setcurrentJob(null);
-    setLoading(false);
+
+    window.location.reload();
   }
 
+  //CREATE A CONTRACT
+  async function HandleCreateContract(e: any) {
+    e.preventDefault();
+    let type;
+    switch (contractType) {
+      case "Standard Service":
+        type = 1;
+        break;
+      case "Premium Service":
+        type = 2;
+        break;
+      case "Basic Maintenance":
+        type = 3;
+        break;
+      case "Corporate Service":
+        type = 4;
+        break;
+      case "Custom Contract":
+        type = 5;
+        break;
+    }
+
+    let status;
+    switch (createContractStatus) {
+      case "Active":
+        status = 1;
+        break;
+      case "Pending Renewal":
+        status = 2;
+        break;
+      case "Expired":
+        status = 3;
+        break;
+      case "Cancelled":
+        status = 4;
+        break;
+      case "Suspended":
+        status = 5;
+        break;
+      case "Terminated":
+        status = 6;
+        break;
+    }
+
+    await handler.CreateContract(
+      currentJob?.JobID,
+      currentJob?.Client.ClientID,
+      currentJob?.Client.ClientEmail,
+      type,
+      status,
+      createContractDescription,
+      signDate,
+      expiryDate
+    );
+    setcurrentJob(null);
+    setChangings(!changings);
+    window.location.reload();
+  }
+  //UPDATE AN EXSISTING CONTRACT
+  async function HandleUpdateContract(e: any) {
+    e.preventDefault();
+    let type;
+    switch (editContractType) {
+      case "Standard Service":
+        type = 1;
+        break;
+      case "Premium Service":
+        type = 2;
+        break;
+      case "Basic Maintenance":
+        type = 3;
+        break;
+      case "Corporate Service":
+        type = 4;
+        break;
+      case "Custom Contract":
+        type = 5;
+        break;
+    }
+
+    let status;
+    switch (editContractStatus) {
+      case "Active":
+        status = 1;
+        break;
+      case "Pending Renewal":
+        status = 2;
+        break;
+      case "Expired":
+        status = 3;
+        break;
+      case "Cancelled":
+        status = 4;
+        break;
+      case "Suspended":
+        status = 5;
+        break;
+      case "Terminated":
+        status = 6;
+        break;
+    }
+
+    await handler.UpdateContract(
+      currentJob?.JobID,
+      currentJob?.Client.ClientID,
+      currentJob?.Client.ClientEmail,
+      type,
+      status,
+      editContractDescription,
+      editSelectedContract
+    );
+    setcurrentJob(null);
+    setChangings(!changings);
+    window.location.reload();
+  }
   useEffect(() => {
     LoadJobs();
   }, [changings]);
@@ -206,6 +337,14 @@ export default function MaintenancePage() {
   }, [currentJob]);
 
   useEffect(() => {
+    if (new Date(signDate) >= new Date(expiryDate)) {
+      setDateHasError(true);
+    } else {
+      setDateHasError(false);
+    }
+  }, [expiryDate, signDate]);
+
+  useEffect(() => {
     let agreement = agreements.filter(
       (x) => x.AgreementID === selectedAgreement
     )[0];
@@ -215,12 +354,16 @@ export default function MaintenancePage() {
     }
   }, [selectedAgreement]);
 
-  async function HandleCreateContract(e: any) {
-    throw new Error("Function not implemented.");
-  }
-  async function HandleUpdateContract(e: any) {
-    throw new Error("Function not implemented.");
-  }
+  useEffect(() => {
+    let contract = contracts.filter(
+      (x) => x.ContractID === editSelectedContract
+    )[0];
+
+    if (contract) {
+      setEditContractStatus(contract.ContractStatus);
+      setEditContractType(contract.ContractType);
+    }
+  }, [editSelectedContract]);
 
   return (
     <div
@@ -375,7 +518,7 @@ export default function MaintenancePage() {
                 >
                   <form
                     id="createServiceAgreementForm"
-                    onSubmit={HandleCreateServiceAgreement}
+                    onSubmit={(e) => HandleCreateServiceAgreement(e)}
                   >
                     <div className="mb-3">
                       <label htmlFor="contract" className="form-label">
@@ -436,7 +579,7 @@ export default function MaintenancePage() {
                 >
                   <form
                     id="updateServiceAgreementForm"
-                    onSubmit={HandleUpdateServiceAgreement}
+                    onSubmit={(e) => HandleUpdateServiceAgreement(e)}
                   >
                     <div className="mb-3">
                       <label htmlFor="SLA" className="form-label">
@@ -578,66 +721,121 @@ export default function MaintenancePage() {
                     onSubmit={(e) => HandleCreateContract(e)}
                   >
                     <div className="mb-3">
-                      <label htmlFor="name" className="form-label">
-                        Name:
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="name"
-                        id="name"
-                        value={clientName}
-                        onChange={(e) => setClientName(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="mb-3">
-                      <label htmlFor="surname" className="form-label">
-                        Surname:
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="surname"
-                        id="surname"
-                        value={clientSurname}
-                        onChange={(e) => setClientSurname(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="mb-3">
-                      <label htmlFor="email" className="form-label">
-                        Email:
-                      </label>
-                      <input
-                        type="email"
-                        className="form-control"
-                        name="email"
-                        id="email"
-                        value={clientEmail}
-                        onChange={(e) => setClientEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="mb-3">
-                      <label htmlFor="clientType" className="form-label">
-                        Client Type:
+                      <label htmlFor="contractType" className="form-label">
+                        Contract Type:
                       </label>
                       <select
                         className="form-select"
-                        name="clientType"
-                        id="clientType"
-                        value={clientType}
-                        onChange={(e) => setClientType(e.target.value)}
+                        name="contractType"
+                        id="contractType"
+                        value={contractType}
+                        onChange={(e) => setContractType(e.target.value)}
                         required
                       >
-                        <option value="">Select Client Type</option>
-                        <option value="Single Person">Single Person</option>
-                        <option value="Large Business">Large Business</option>
-                        <option value="Small Business">Small Business</option>
+                        <option value="">Contract Type</option>
+                        <option value="Standard Service">
+                          Standard Service
+                        </option>
+                        <option value="Premium Service">Premium Service</option>
+                        <option value="Basic Maintenance">
+                          Basic Maintenance
+                        </option>
+                        <option value="Corporate Service">
+                          Corporate Service
+                        </option>
+                        <option value="Custom Contract">Custom Contract</option>
                       </select>
                     </div>
-                    <button type="submit" className="btn btn-dark">
+                    <div className="mb-3">
+                      <label htmlFor="contractType" className="form-label">
+                        Contract Status:
+                      </label>
+                      <select
+                        className="form-select"
+                        name="contractStatus"
+                        id="contractStatus"
+                        value={createContractStatus}
+                        onChange={(e) =>
+                          setCreateContractStatus(e.target.value)
+                        }
+                        required
+                      >
+                        <option value="">Select Contract Status</option>
+
+                        <option value="Active">Active</option>
+                        <option value="Cancelled">Cancelled</option>
+                        <option value="Suspended">Suspended</option>
+                        <option value="Terminated">Terminated</option>
+                      </select>
+                    </div>
+                    <div className="mb-3">
+                      <label
+                        htmlFor="creatContractDescription"
+                        className="form-label"
+                      >
+                        Contract Description:
+                      </label>
+                      <textarea
+                        className="form-control"
+                        name="creatContractDescription"
+                        id="creatContractDescription"
+                        rows={4}
+                        value={createContractDescription}
+                        onChange={(e) =>
+                          setCreateContractDescription(e.target.value)
+                        }
+                        required
+                      ></textarea>
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="signDate" className="form-label">
+                        Sign Date:
+                      </label>
+                      {dateHasError ? (
+                        <div className="p-1 text-danger-emphasis bg-danger-subtle border border-danger rounded-3">
+                          The sign date has to be before the expiry date.
+                        </div>
+                      ) : (
+                        <></>
+                      )}
+                      <input
+                        type="date"
+                        className="form-control"
+                        name="signDate"
+                        id="signDate"
+                        value={new Date(signDate).toISOString().split("T")[0]}
+                        onChange={(e) =>
+                          setSignDate(
+                            new Date(e.target.value).toLocaleDateString("en-US")
+                          )
+                        }
+                        required
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label htmlFor="expiryDate" className="form-label">
+                        Expiry Date:
+                      </label>
+                      <input
+                        type="date"
+                        className="form-control"
+                        name="expiryDate"
+                        id="expiryDate"
+                        value={new Date(expiryDate).toISOString().split("T")[0]}
+                        onChange={(e) =>
+                          setExpiryDate(
+                            new Date(e.target.value).toLocaleDateString("en-US")
+                          )
+                        }
+                        required
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="btn btn-dark"
+                      disabled={dateHasError}
+                    >
                       Create Contract
                     </button>
                   </form>
@@ -661,8 +859,10 @@ export default function MaintenancePage() {
                         className="form-select"
                         name="contract"
                         id="contract"
-                        value={selectedContract}
-                        onChange={(e) => setSelectedContract(e.target.value)}
+                        value={editSelectedContract}
+                        onChange={(e) =>
+                          setEditSelectedContract(e.target.value)
+                        }
                         required
                       >
                         <option value="">Select Contract</option>
@@ -682,7 +882,52 @@ export default function MaintenancePage() {
                           ))}
                       </select>
                     </div>
+                    <div className="mb-3">
+                      <label htmlFor="contractType" className="form-label">
+                        Contract Status:
+                      </label>
+                      <select
+                        className="form-select"
+                        name="contractStatus"
+                        id="contractStatus"
+                        value={editContractStatus}
+                        onChange={(e) => setEditContractStatus(e.target.value)}
+                        required
+                      >
+                        <option value="">Select Contract Status</option>
 
+                        <option value="Active">Active</option>
+                        <option value="Cancelled">Cancelled</option>
+                        <option value="Suspended">Suspended</option>
+                        <option value="Terminated">Terminated</option>
+                      </select>
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="contractType" className="form-label">
+                        Contract Type:
+                      </label>
+                      <select
+                        className="form-select"
+                        name="contractType"
+                        id="contractType"
+                        value={editContractType}
+                        onChange={(e) => setEditContractType(e.target.value)}
+                        required
+                      >
+                        <option value="">Contract Type</option>
+                        <option value="Standard Service">
+                          Standard Service
+                        </option>
+                        <option value="Premium Service">Premium Service</option>
+                        <option value="Basic Maintenance">
+                          Basic Maintenance
+                        </option>
+                        <option value="Corporate Service">
+                          Corporate Service
+                        </option>
+                        <option value="Custom Contract">Custom Contract</option>
+                      </select>
+                    </div>
                     <div className="mb-3">
                       <label htmlFor="description" className="form-label">
                         Description:
@@ -692,8 +937,10 @@ export default function MaintenancePage() {
                         name="description"
                         id="description"
                         rows={4}
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
+                        value={editContractDescription}
+                        onChange={(e) =>
+                          setEditContractDescription(e.target.value)
+                        }
                         required
                       ></textarea>
                     </div>

@@ -20,11 +20,6 @@ export default function Sidebar(props: SidebarProps) {
           className="img-fluid rounded-circle"
         />
         <p className="text-white text-center fs-4">{user.user?.username}</p>
-        {props.showButtons ? (
-          <button className="btn btn-outline-light">Edit</button>
-        ) : (
-          <></>
-        )}
       </div>
 
       <div className="container mt-2">
@@ -97,7 +92,11 @@ export default function Sidebar(props: SidebarProps) {
         </div>
       </div>
       {props.showButtons ? (
-        <button className="btn btn-outline-success w-75 mb-1 mt-3">
+        <button
+          className="btn btn-outline-success w-75 mb-1 mt-3"
+          data-bs-toggle="modal"
+          data-bs-target="#completeJobModal"
+        >
           Complete
         </button>
       ) : (

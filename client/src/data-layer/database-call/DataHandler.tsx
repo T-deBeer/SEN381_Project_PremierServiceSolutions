@@ -8,6 +8,67 @@ import Contract from "../data-classes/Contract";
 import ServiceAgreement from "../data-classes/ServiceAgreement";
 
 export default class DataHandler {
+  async CompleteServiceRequest(RequestID: number, ClientEmail: string) {
+    try {
+      await axios.post("/api/get/requests-complete", {
+        RequestID: RequestID,
+        Email: ClientEmail,
+      });
+    } catch (error) {
+      console.error("Error completing request:", error);
+      throw error;
+    }
+  }
+  async UpdateContract(
+    JobID: string | undefined,
+    ClientID: string | undefined,
+    ClientEmail: string | undefined,
+    type: number | undefined,
+    status: number | undefined,
+    editContractDescription: string,
+    editSelectedContract: string
+  ) {
+    try {
+      await axios.post("/api/get/update-contract", {
+        JobID: JobID,
+        ClientID: ClientID,
+        Email: ClientEmail,
+        ContractBlob: editContractDescription,
+        Type: type,
+        Status: status,
+        ContractID: editSelectedContract,
+      });
+    } catch (error) {
+      console.error("Error updating contract:", error);
+      throw error;
+    }
+  }
+  async CreateContract(
+    JobID: string | undefined,
+    ClientID: string | undefined,
+    ClientEmail: string | undefined,
+    type: number | undefined,
+    status: number | undefined,
+    createContractDescription: string,
+    signDate: string,
+    expiryDate: string
+  ) {
+    try {
+      await axios.post("/api/get/create-contract", {
+        JobID: JobID,
+        ClientID: ClientID,
+        Email: ClientEmail,
+        ContractBlob: createContractDescription,
+        Type: type,
+        Status: status,
+        SignDate: signDate,
+        ExpiryDate: expiryDate,
+      });
+    } catch (error) {
+      console.error("Error creating contract:", error);
+      throw error;
+    }
+  }
   async UpdateAgreement(
     JobID: string | undefined,
     ClientEmail: string | undefined,
@@ -24,7 +85,7 @@ export default class DataHandler {
         RequestID: selectedAgreement,
       });
     } catch (error) {
-      console.error("Error getting service requests:", error);
+      console.error("Error updating agreements requests:", error);
       throw error;
     }
   }
@@ -42,7 +103,7 @@ export default class DataHandler {
         ContractID: selectedContract,
       });
     } catch (error) {
-      console.error("Error getting service requests:", error);
+      console.error("Error creating agreement:", error);
       throw error;
     }
   }
@@ -99,7 +160,7 @@ export default class DataHandler {
 
       return agreements;
     } catch (error) {
-      console.error("Error getting service requests:", error);
+      console.error("Error getting agreements:", error);
       throw error;
     }
   }
@@ -349,13 +410,12 @@ export default class DataHandler {
 
           serviceRequest.RequestID = requestData.ID;
 
-          if (serviceRequest.Active) {
-            return serviceRequest;
-          }
+          return serviceRequest;
         }
       );
 
       return serviceRequests
+        .filter((request) => request.Active === 1)
         .slice()
         .sort(
           (a: ServiceRequest, b: ServiceRequest) =>
