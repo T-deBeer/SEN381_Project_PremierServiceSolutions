@@ -58,7 +58,7 @@ export default function LoginPage() {
       }
       if (
         criteria == "❎ Contains a special character" &&
-        /[@#$%^&*?_-!]/.test(password)
+        /[@#$%^&*?_!]/.test(password)
       ) {
         return `✅ Contains a special character`;
       }
