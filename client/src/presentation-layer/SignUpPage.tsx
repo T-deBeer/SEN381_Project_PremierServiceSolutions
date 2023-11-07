@@ -23,6 +23,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState(false);
+  const [passwordComplexity, setPasswordComplexity] = useState(0);
+  const [completionList, setCompletionList] = useState<string[]>([]);
   const [emailError, setEmailError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [registeredEmails, setRegisteredEmails] = useState<string[]>([]);
@@ -35,13 +37,47 @@ export default function LoginPage() {
     } else {
       setPasswordError(false);
     }
-    console.log();
+
     if (registeredEmails.includes(email)) {
       setEmailError(true);
     } else {
       setEmailError(false);
     }
   }, [confirmPassword, email, password]);
+
+  useEffect(() => {
+    const listCriteria = [
+      "❎ Contains a number",
+      "❎ Contains a special character",
+      "❎ At least 8 characters long",
+    ];
+
+    const updatedList = listCriteria.map((criteria) => {
+      if (criteria == "❎ Contains a number" && /\d/.test(password)) {
+        return `✅ Contains a number`;
+      }
+      if (
+        criteria == "❎ Contains a special character" &&
+        /[@#$%^&*!]/.test(password)
+      ) {
+        return `✅ Contains a special character`;
+      }
+      if (criteria == "❎ At least 8 characters long" && password.length >= 8) {
+        return `✅ At least 8 characters long`;
+      }
+      return criteria;
+    });
+
+    setCompletionList(updatedList);
+
+    const completedCriteriaCount = updatedList.filter((criteria) =>
+      criteria.includes("✅")
+    ).length;
+    const totalCriteria = updatedList.length;
+    const percentageCompletion = (completedCriteriaCount / totalCriteria) * 100;
+
+    setPasswordComplexity(percentageCompletion);
+  }, [password]);
 
   async function LoadRequired() {
     let emails = await handler.GetClientEmails();
@@ -72,7 +108,7 @@ export default function LoginPage() {
       <Navbar />
       {isLoading ? <FontAwesomeIcon icon={faSpinner} spin size="3x" /> : <></>}
       <WelcomeDiv text={"Premier Service Solutions"} />
-      <div className="d-flex flex-row justify-content-center align-items-center mt-5">
+      <div className="d-flex flex-row justify-content-center align-items-center mt-1">
         <form
           className="bg-dark-subtle m-2 rounded-3 p-5 w-50"
           onSubmit={HandleSignUp}
@@ -129,7 +165,13 @@ export default function LoginPage() {
               Email<sup className="text-danger">*</sup>
             </label>
           </div>
-          <div className="form-floating mb-4 d-flex flex-row">
+          <div
+            className={
+              passwordComplexity != 100
+                ? "form-floating d-flex flex-row mb-1"
+                : "form-floating d-flex flex-row mb-4"
+            }
+          >
             <input
               type={showPassword ? "text" : "password"}
               className="form-control"
@@ -141,7 +183,7 @@ export default function LoginPage() {
               value={password}
             />
             <button
-              className="btn btn-outline-dark "
+              className="btn btn-outline-dark mb-1"
               type="button"
               onClick={() => setShowPassword(!showPassword)}
             >
@@ -151,6 +193,15 @@ export default function LoginPage() {
               Password<sup className="text-danger">*</sup>
             </label>
           </div>
+          {passwordComplexity != 100 ? (
+            <div className="p-1 text-danger-emphasis bg-danger-subtle border border-danger rounded-3 mb-4">
+              {completionList.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </div>
+          ) : (
+            <></>
+          )}
           {passwordError ? (
             <div className="p-1 text-danger-emphasis bg-danger-subtle border border-danger rounded-3">
               Passwords should be matching
@@ -158,6 +209,7 @@ export default function LoginPage() {
           ) : (
             <></>
           )}
+
           <div className="form-floating mb-4 d-flex flex-row">
             <input
               type={showConfPassword ? "text" : "password"}
@@ -196,7 +248,7 @@ export default function LoginPage() {
               type="submit"
               id="signUp"
               className="btn btn-outline-dark btn-lg"
-              disabled={passwordError}
+              disabled={passwordError || passwordComplexity != 100}
             >
               Sign Up
             </button>

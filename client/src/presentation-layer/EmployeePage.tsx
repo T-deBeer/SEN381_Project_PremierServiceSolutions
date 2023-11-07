@@ -8,6 +8,8 @@ import DataHandler from "../data-layer/database-call/DataHandler";
 import CustomPagination from "../components/CustomPagination";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function EmployeePage() {
   const { user } = useUser();
@@ -39,8 +41,9 @@ export default function EmployeePage() {
 
   async function CompleteRequest(e: any) {
     e.preventDefault();
-    setLoading(true);
+
     if (selectedRequest) {
+      setLoading(true);
       await handler.CompleteServiceRequest(
         selectedRequest.RequestID,
         selectedRequest.RequestClient.ClientEmail
@@ -49,6 +52,10 @@ export default function EmployeePage() {
       setChangings(!changings);
       setLoading(false);
       window.location.reload();
+    } else {
+      toast("Please select a request before trying to complete it.", {
+        type: "error",
+      });
     }
   }
 
@@ -129,6 +136,17 @@ export default function EmployeePage() {
         isLoading == true ? "vh-100 bg-dark-subtle opacity-50" : "vh-100"
       }
     >
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        draggable={false}
+        pauseOnHover
+        theme="colored"
+      />
       {isLoading == true ? (
         <div className="position-absolute top-50 start-50 ">
           <FontAwesomeIcon icon={faSpinner} spin size="10x" />

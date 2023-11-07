@@ -14,6 +14,8 @@ import CallBubble from "../components/CallBubble";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { socket } from "../data-layer/context-classes/Socket";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function CallCentrePage() {
   const { user } = useUser();
@@ -101,9 +103,12 @@ export default function CallCentrePage() {
 
       setCurrentCall(null);
       setCallsDescription("");
+      setHandled(!handled);
+    } else {
+      toast("Please, select a call before trying to handling one", {
+        type: "error",
+      });
     }
-
-    setHandled(!handled);
   }
 
   function RejectCall(id: string, email: string) {
@@ -140,6 +145,17 @@ export default function CallCentrePage() {
         isLoading == true ? "vh-100 bg-dark-subtle opacity-50" : "vh-100"
       }
     >
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        draggable={false}
+        pauseOnHover
+        theme="colored"
+      />
       {isLoading == true ? (
         <div className="position-absolute top-50 start-50 z-1">
           <FontAwesomeIcon icon={faSpinner} spin size="10x" />
