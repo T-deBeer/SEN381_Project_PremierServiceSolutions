@@ -4,7 +4,11 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import WelcomeDiv from "../components/WelcomeDiv";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import {
+  faEye,
+  faEyeSlash,
+  faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
 import DataHandler from "../data-layer/database-call/DataHandler";
 import { useNavigate } from "react-router-dom";
 
@@ -22,6 +26,8 @@ export default function LoginPage() {
   const [emailError, setEmailError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [registeredEmails, setRegisteredEmails] = useState<string[]>([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfPassword, setShowConfPassword] = useState(false);
 
   useEffect(() => {
     if (password != confirmPassword) {
@@ -123,9 +129,9 @@ export default function LoginPage() {
               Email<sup className="text-danger">*</sup>
             </label>
           </div>
-          <div className="form-floating mb-4">
+          <div className="form-floating mb-4 d-flex flex-row">
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               className="form-control"
               id="password"
               name="password"
@@ -134,6 +140,13 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               value={password}
             />
+            <button
+              className="btn btn-outline-dark "
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+            </button>
             <label htmlFor="password">
               Password<sup className="text-danger">*</sup>
             </label>
@@ -145,9 +158,9 @@ export default function LoginPage() {
           ) : (
             <></>
           )}
-          <div className="form-floating mb-4">
+          <div className="form-floating mb-4 d-flex flex-row">
             <input
-              type="password"
+              type={showConfPassword ? "text" : "password"}
               className="form-control"
               id="confirmPassword"
               name="confirmPassword"
@@ -156,6 +169,13 @@ export default function LoginPage() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               value={confirmPassword}
             />
+            <button
+              className="btn btn-outline-dark "
+              type="button"
+              onClick={() => setShowConfPassword(!showConfPassword)}
+            >
+              <FontAwesomeIcon icon={showConfPassword ? faEyeSlash : faEye} />
+            </button>
             <label htmlFor="password">
               Confirm Password<sup className="text-danger">*</sup>
             </label>

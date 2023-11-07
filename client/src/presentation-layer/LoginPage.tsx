@@ -5,7 +5,11 @@ import Footer from "../components/Footer";
 import WelcomeDiv from "../components/WelcomeDiv";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import {
+  faEye,
+  faEyeSlash,
+  faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import DataHandler from "../data-layer/database-call/DataHandler";
 
@@ -15,6 +19,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
   const navi = useNavigate();
   const handler = new DataHandler();
 
@@ -24,7 +30,6 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-
       let user = await handler.AttemptLogin(email, password);
       login(user);
     } catch (error) {
@@ -98,9 +103,9 @@ export default function LoginPage() {
               Email<sup className="text-danger">*</sup>
             </label>
           </div>
-          <div className="form-floating mb-4">
+          <div className="form-floating mb-4 d-flex flex-row">
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               className="form-control"
               id="password"
               name="password"
@@ -109,6 +114,13 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            <button
+              className="btn btn-outline-dark "
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+            </button>
             <label htmlFor="password">
               Password<sup className="text-danger">*</sup>
             </label>
