@@ -124,7 +124,9 @@ export default function ServiceDeptPage() {
     );
   }
 
-  async function changeEmp() {
+  async function changeEmp(e: any) {
+    setLoading(true);
+    e.preventDefault();
     const selectElement = document.getElementById(
       "worker"
     ) as HTMLSelectElement;
@@ -132,6 +134,8 @@ export default function ServiceDeptPage() {
 
     await handler.AssignRequest(selectedRequest, selectedValue);
     setChangings(!changings);
+    setLoading(false);
+    window.location.reload();
   }
 
   async function SetActive() {
@@ -140,6 +144,7 @@ export default function ServiceDeptPage() {
     }
 
     setChangings(!changings);
+    window.location.reload();
   }
 
   //Get data from the database
@@ -149,7 +154,7 @@ export default function ServiceDeptPage() {
     LoadWorkers();
     setLoading(false);
   }, [changings]);
-  
+
   return (
     <div
       className={
@@ -185,7 +190,7 @@ export default function ServiceDeptPage() {
               ></button>
             </div>
             <div className="modal-body">
-              <form id="assignJobForm" onSubmit={changeEmp}>
+              <form id="assignJobForm" onSubmit={(e) => changeEmp(e)}>
                 <div className="form-group mb-3">
                   <label htmlFor="worker">Select Worker:</label>
                   <select

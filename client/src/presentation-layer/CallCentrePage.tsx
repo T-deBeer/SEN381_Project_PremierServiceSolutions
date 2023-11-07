@@ -104,6 +104,7 @@ export default function CallCentrePage() {
       setCurrentCall(null);
       setCallsDescription("");
       setHandled(!handled);
+      window.location.reload();
     } else {
       toast("Please, select a call before trying to handling one", {
         type: "error",
