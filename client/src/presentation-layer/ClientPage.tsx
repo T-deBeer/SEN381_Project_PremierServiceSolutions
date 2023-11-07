@@ -71,8 +71,9 @@ export default function ClientPage() {
         console.error("Error creating a new call:", error);
       }
       setChangings(!changings);
-      setLoading(false);
+
       window.location.reload();
+      setLoading(false);
     }
   }
 
@@ -129,8 +130,11 @@ export default function ClientPage() {
       socket.off("recieve-message", handleReceiveMessage);
     };
   }, []);
+
   useEffect(() => {
-    LoadRequired();
+    if (user) {
+      LoadRequired();
+    }
   }, [user, changings]);
 
   useEffect(() => {
@@ -172,10 +176,6 @@ export default function ClientPage() {
     }
     setLoading(false);
   }, [search]);
-
-  useEffect(() => {
-    console.log(requests);
-  }, [requests]);
 
   return (
     <div

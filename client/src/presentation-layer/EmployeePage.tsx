@@ -126,8 +126,11 @@ export default function EmployeePage() {
 
     setSidebarData(data);
   }
+
   useEffect(() => {
-    LoadRequests();
+    if (user) {
+      LoadRequests();
+    }
   }, [user, changings]);
 
   return (
@@ -166,7 +169,7 @@ export default function EmployeePage() {
           <div className="modal-content">
             <div className="modal-header bg-dark">
               <h5 className="modal-title text-white" id="completeJobModalLabel">
-                Cancel Job
+                Complete Service Request
               </h5>
               <button
                 type="button"
