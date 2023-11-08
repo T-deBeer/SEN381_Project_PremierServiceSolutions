@@ -120,12 +120,12 @@ export default function LoginPage() {
               className="form-control"
               id="firstName"
               name="firstName"
-              placeholder="Firstname"
+              placeholder="First Name"
               onChange={(e) => setFirstName(e.target.value)}
               value={firstName}
             />
             <label htmlFor="floatingName">
-              Firstname<sup className="text-danger">*</sup>
+              First Name<sup className="text-danger">*</sup>
             </label>
           </div>
           <div className="form-floating mb-4">
@@ -134,13 +134,13 @@ export default function LoginPage() {
               className="form-control"
               id="lastName"
               name="lastName"
-              placeholder="Lastname"
+              placeholder="Last Name"
               onChange={(e) => setLastName(e.target.value)}
               value={lastName}
             />
 
             <label htmlFor="floatingName">
-              Lastname<sup className="text-danger">*</sup>
+              Last Name<sup className="text-danger">*</sup>
             </label>
           </div>
           {emailError ? (

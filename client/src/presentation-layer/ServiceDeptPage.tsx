@@ -19,7 +19,7 @@ export default function ServiceDeptPage() {
   const [anRequests, setAnRequests] = useState<ServiceRequest[]>([]);
   const [workers, setWorkers] = useState<Staff[]>();
   const [selectedRequest, setSelectedRequest] = useState<string>();
-  const [changings, setChangings] = useState(false);
+  const [changes, setChanges] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [sideBarData, setSidebarData] = useState<SidebarProps>({
     showButtons: false,
@@ -82,7 +82,7 @@ export default function ServiceDeptPage() {
         </p>
         <p>Request Date: {request?.RequestTime.toLocaleDateString("en-us")}</p>
         <p>
-          Fulfilment Date:{" "}
+          Fulfillment Date:{" "}
           {request?.FulfillmentDate.toLocaleDateString("en-us")}
         </p>
       </div>
@@ -133,7 +133,7 @@ export default function ServiceDeptPage() {
     const selectedValue = selectElement?.value;
 
     await handler.AssignRequest(selectedRequest, selectedValue);
-    setChangings(!changings);
+    setChanges(!changes);
     setLoading(false);
     window.location.reload();
   }
@@ -143,7 +143,7 @@ export default function ServiceDeptPage() {
       handler.MarkRequestInactive(selectedRequest);
     }
 
-    setChangings(!changings);
+    setChanges(!changes);
     window.location.reload();
   }
 
@@ -153,7 +153,7 @@ export default function ServiceDeptPage() {
     LoadRequests();
     LoadWorkers();
     setLoading(false);
-  }, [changings]);
+  }, [changes]);
 
   return (
     <div
