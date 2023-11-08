@@ -281,7 +281,6 @@ export default function ServiceDeptPage() {
                 <tr>
                   <th>Client</th>
                   <th>Priority</th>
-                  <th>Service</th>
                   <th>Date Requested</th>
                   <th>Assign Request</th>
                   <th>Reject Request</th>
@@ -295,7 +294,6 @@ export default function ServiceDeptPage() {
                       {request.RequestClient.ClientSurname}
                     </td>
                     <td>{request.Priority}</td>
-                    <td>{request.SKU.Description}</td>
                     <td>{request.RequestTime.toLocaleString()}</td>
                     <td>
                       <button
@@ -340,7 +338,6 @@ export default function ServiceDeptPage() {
                 <tr>
                   <th>Client</th>
                   <th>Worker</th>
-                  <th>Service</th>
                   <th>Re-Assign Request</th>
                   <th>Cancel Job</th>
                 </tr>
@@ -355,7 +352,6 @@ export default function ServiceDeptPage() {
                     <td>
                       {request.Staff?.StaffName} {request.Staff?.StaffSurname}
                     </td>
-                    <td>{request.SKU.Description}</td>
                     <td>
                       <button
                         className="btn btn-outline-light btn-sm"
