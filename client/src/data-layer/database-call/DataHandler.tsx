@@ -476,7 +476,7 @@ export default class DataHandler {
     }
   }
   async AssignRequest(requestID: string | undefined, workerID: string) {
-    await axios
+    await axios // Request is assigned an employeeID
       .post("api/get/requests/assign", {
         id: requestID,
         employee: workerID,
@@ -543,7 +543,6 @@ export default class DataHandler {
           jobData.Active
         );
       });
-      //console.log(jobs);
       return jobs;
     } catch (error) {
       console.error("Error fetching data:", error);

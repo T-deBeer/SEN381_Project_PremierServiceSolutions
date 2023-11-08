@@ -305,7 +305,7 @@ export default function CallCentrePage() {
       </div>
 
       <div className="d-flex flex-row p-2 flex-wrap h-50">
-        {/* Side Bar Seciton */}
+        {/* Side Bar Section */}
         <div className="w-25 h-50">
           <h3>Open Calls</h3>
           <div className="accordion accordion-flush" id="accordionFlushExample">
@@ -360,7 +360,7 @@ export default function CallCentrePage() {
             </div>
           </div>
         </div>
-        {/* Main Seciton */}
+        {/* Main Section */}
         <div className="flex-grow-1 d-flex flex-column align-items-center justify-content-center gap-4">
           {/* CURRENT */}
           {currentCall ? (
@@ -458,7 +458,7 @@ export default function CallCentrePage() {
               <div className="card-body">
                 <h5 className="card-title">CONTRACT MAINTENANCE</h5>
                 <p className="card-text">
-                  Client is requesint maintenance or changes to either their
+                  Client is requesting maintenance or changes to either their
                   contract or Service License Agreement(SLA).
                 </p>
                 <button
