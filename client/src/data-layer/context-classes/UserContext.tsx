@@ -15,7 +15,7 @@ interface User {
 interface UserContextType {
   user: User | null;
   login: (user: User) => void;
-  signout: () => void;
+  signOut: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -46,7 +46,7 @@ export function UserProvider({ children }: UserProviderProps) {
     setUser(userData);
   };
 
-  const signout = () => {
+  const signOut = () => {
     setUser(null);
     window.location.replace("/");
   };
@@ -60,7 +60,7 @@ export function UserProvider({ children }: UserProviderProps) {
   }, [user]);
 
   return (
-    <UserContext.Provider value={{ user, login, signout }}>
+    <UserContext.Provider value={{ user, login, signOut: signOut }}>
       {children}
     </UserContext.Provider>
   );

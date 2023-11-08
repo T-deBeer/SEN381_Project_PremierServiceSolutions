@@ -194,7 +194,7 @@ export default class DataHandler {
 
         return call;
       });
-
+      //Return sorted list
       return calls
         .slice()
         .sort(

@@ -1,7 +1,7 @@
 import Call from "../data-layer/data-classes/Call";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPhone } from "@fortawesome/free-solid-svg-icons";
-
+// This is a prefabrication of the Phone bubble seen in the client page.
 export default function CallBubble({
   callInfo,
   ClickFunction,

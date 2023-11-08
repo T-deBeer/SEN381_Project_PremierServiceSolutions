@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 import DataHandler from "../data-layer/database-call/DataHandler";
 
 export default function LoginPage() {
-  const { user, login, signout } = useUser();
+  const { user, login, signOut: signout } = useUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);

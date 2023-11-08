@@ -1,5 +1,5 @@
 import Pagination from "react-bootstrap/Pagination";
-
+// Pagination allows a table to be fixed in height and go through pages of rows.
 export default function CustomPagination({
   activePage,
   itemsCountPerPage,

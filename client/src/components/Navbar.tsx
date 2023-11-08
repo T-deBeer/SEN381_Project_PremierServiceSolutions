@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { useUser } from "../data-layer/context-classes/UserContext";
 
 export default function Navbar() {
-  const { user, signout } = useUser();
+  const { user, signOut: signout } = useUser();
   return (
     <nav
       className="navbar navbar-expand-lg navbar-dark bg-dark p-2"
@@ -38,7 +38,7 @@ export default function Navbar() {
             </button>
           </form>
         ) : (
-          //If user is not loggged in
+          //If user is not logged in
           <form
             className="d-flex gap-2 justify-content-end w-100 mx-1 my-2"
             role="search"

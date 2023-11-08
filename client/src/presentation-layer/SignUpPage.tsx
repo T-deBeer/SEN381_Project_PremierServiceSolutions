@@ -16,7 +16,7 @@ export default function LoginPage() {
   const handler = new DataHandler();
   const navi = useNavigate();
 
-  const { user, login, signout } = useUser();
+  const { user, login, signOut: signout } = useUser();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");

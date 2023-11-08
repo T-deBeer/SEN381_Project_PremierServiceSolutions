@@ -4,7 +4,7 @@ import WelcomeDiv from "../components/WelcomeDiv";
 import { useUser } from "../data-layer/context-classes/UserContext";
 
 export default function LandingPage() {
-  const { user, login, signout } = useUser();
+  const { user, login, signOut: signout } = useUser();
   return (
     <div className="vh-100">
       <Navbar />
