@@ -15,7 +15,7 @@ export default function MaintenancePage() {
   const handler = new DataHandler();
   const { user } = useUser();
   const [jobs, setJobs] = useState<MaintenanceJob[]>([]);
-  const [changings, setChangings] = useState(true);
+  const [changes, setChanges] = useState(true);
   const [sideBarData, setSidebarData] = useState<SidebarProps>({
     showButtons: false,
     tabContent1: <p>Summary</p>,
@@ -26,7 +26,7 @@ export default function MaintenancePage() {
   const [clientSurname, setClientSurname] = useState("");
   const [clientEmail, setClientEmail] = useState("");
   const [clientType, setClientType] = useState("");
-  const [currentJob, setcurrentJob] = useState<MaintenanceJob | null>(null);
+  const [currentJob, setCurrentJob] = useState<MaintenanceJob | null>(null);
   const [isLoading, setLoading] = useState(false);
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [agreements, setAgreements] = useState<ServiceAgreement[]>([]);
@@ -84,7 +84,7 @@ export default function MaintenancePage() {
     setLoading(true);
 
     let job = jobs?.filter((x) => x.JobID == ID)[0];
-    setcurrentJob(job);
+    setCurrentJob(job);
 
     setClientName(job.Client.ClientName);
     setClientSurname(job.Client.ClientSurname);
@@ -103,7 +103,7 @@ export default function MaintenancePage() {
           Client: {jobClient?.ClientName} {jobClient?.ClientSurname}
         </p>
         <p className="tex-wrap">Description: {job.Description}</p>
-        <p>Diffiiculty: {job.DifficultyRating}</p>
+        <p>Difficulty: {job.DifficultyRating}</p>
         <p>Job Type: {job.Type.toUpperCase()} MAINTENANCE</p>
       </div>
     );
@@ -141,7 +141,7 @@ export default function MaintenancePage() {
       currentJob?.JobID,
       currentJob?.Client.ClientEmail
     );
-    setChangings(!changings);
+    setChanges(!changes);
     setLoading(false);
   }
 
@@ -170,8 +170,8 @@ export default function MaintenancePage() {
       clientEmail,
       type
     );
-    setcurrentJob(null);
-    setChangings(!changings);
+    setCurrentJob(null);
+    setChanges(!changes);
     window.location.reload();
   }
 
@@ -185,8 +185,8 @@ export default function MaintenancePage() {
       selectedContractEdit,
       selectedAgreement
     );
-    setcurrentJob(null);
-    setChangings(!changings);
+    setCurrentJob(null);
+    setChanges(!changes);
 
     window.location.reload();
   }
@@ -200,8 +200,8 @@ export default function MaintenancePage() {
       description,
       selectedContract
     );
-    setChangings(!changings);
-    setcurrentJob(null);
+    setChanges(!changes);
+    setCurrentJob(null);
 
     window.location.reload();
   }
@@ -260,11 +260,11 @@ export default function MaintenancePage() {
       signDate,
       expiryDate
     );
-    setcurrentJob(null);
-    setChangings(!changings);
+    setCurrentJob(null);
+    setChanges(!changes);
     window.location.reload();
   }
-  //UPDATE AN EXSISTING CONTRACT
+  //UPDATE AN EXISTING CONTRACT
   async function HandleUpdateContract(e: any) {
     e.preventDefault();
     let type;
@@ -317,13 +317,13 @@ export default function MaintenancePage() {
       editContractDescription,
       editSelectedContract
     );
-    setcurrentJob(null);
-    setChangings(!changings);
+    setCurrentJob(null);
+    setChanges(!changes);
     window.location.reload();
   }
   useEffect(() => {
     LoadJobs();
-  }, [changings]);
+  }, [changes]);
 
   useEffect(() => {
     if (!currentJob) {

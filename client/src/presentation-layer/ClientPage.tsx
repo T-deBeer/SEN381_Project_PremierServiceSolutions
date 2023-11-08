@@ -21,7 +21,7 @@ export default function ClientPage() {
   const [currentCall, setCurrentCall] = useState<Call | null>();
   const [currentMessage, setCurrentMessage] = useState<string>();
   const [messages, setMessages] = useState<string[]>([]);
-  const [changings, setChangings] = useState(false);
+  const [changes, setChanges] = useState(false);
   const [search, setSearch] = useState<string>("");
   const [isLoading, setLoading] = useState(false);
 
@@ -66,11 +66,11 @@ export default function ClientPage() {
 
       try {
         await handler.CreateCall(id, type, description);
-        setChangings(!changings);
+        setChanges(!changes);
       } catch (error) {
         console.error("Error creating a new call:", error);
       }
-      setChangings(!changings);
+      setChanges(!changes);
 
       window.location.reload();
       setLoading(false);
@@ -135,7 +135,7 @@ export default function ClientPage() {
     if (user) {
       LoadRequired();
     }
-  }, [user, changings]);
+  }, [user, changes]);
 
   useEffect(() => {
     setLoading(true);

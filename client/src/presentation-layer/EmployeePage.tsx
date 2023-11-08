@@ -16,7 +16,7 @@ export default function EmployeePage() {
   const [userID, setUserID] = useState<string>();
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<ServiceRequest>();
-  const [changings, setChangings] = useState(false);
+  const [changes, setChanges] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const handler = new DataHandler();
 
@@ -49,7 +49,7 @@ export default function EmployeePage() {
         selectedRequest.RequestClient.ClientEmail
       );
 
-      setChangings(!changings);
+      setChanges(!changes);
       setLoading(false);
       window.location.reload();
     } else {
@@ -91,7 +91,7 @@ export default function EmployeePage() {
         </p>
         <p>Request Date: {request?.RequestTime.toLocaleDateString("en-us")}</p>
         <p>
-          Fulfilment Date:{" "}
+          Fulfillment Date:{" "}
           {request?.FulfillmentDate.toLocaleDateString("en-us")}
         </p>
       </div>
@@ -131,7 +131,7 @@ export default function EmployeePage() {
     if (user) {
       LoadRequests();
     }
-  }, [user, changings]);
+  }, [user, changes]);
 
   return (
     <div
